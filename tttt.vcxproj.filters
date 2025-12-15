@@ -26,14 +26,14 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Jeu.c">
-      <Filter>Fichiers d%27en-tête</Filter>
+    <ClCompile Include="Podium.c">
+      <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Main.c">
-      <Filter>Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Podium.c">
-      <Filter>Fichiers d%27en-tête</Filter>
+    <ClCompile Include="Jeu.c">
+      <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
