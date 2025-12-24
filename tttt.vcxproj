@@ -19,15 +19,21 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="itemliste.h" />
+    <ClInclude Include="itemvecteur.h" />
     <ClInclude Include="Jeu.h" />
     <ClInclude Include="Lecture.h" />
+    <ClInclude Include="liste.h" />
     <ClInclude Include="Podium.h" />
+    <ClInclude Include="vecteur.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Jeu.c" />
     <ClCompile Include="Lecture.c" />
+    <ClCompile Include="liste.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="Podium.c" />
+    <ClCompile Include="vecteur.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

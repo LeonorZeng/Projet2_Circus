@@ -24,6 +24,18 @@
     <ClInclude Include="Lecture.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="itemliste.h">
+      <Filter>Fichiers de ressources</Filter>
+    </ClInclude>
+    <ClInclude Include="liste.h">
+      <Filter>Fichiers de ressources</Filter>
+    </ClInclude>
+    <ClInclude Include="vecteur.h">
+      <Filter>Fichiers de ressources</Filter>
+    </ClInclude>
+    <ClInclude Include="itemvecteur.h">
+      <Filter>Fichiers de ressources</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Podium.c">
@@ -37,6 +49,12 @@
     </ClCompile>
     <ClCompile Include="Lecture.c">
       <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="liste.c">
+      <Filter>Fichiers de ressources</Filter>
+    </ClCompile>
+    <ClCompile Include="vecteur.c">
+      <Filter>Fichiers de ressources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
