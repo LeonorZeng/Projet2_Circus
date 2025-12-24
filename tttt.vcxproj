@@ -19,12 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Animaux.h" />
     <ClInclude Include="Jeu.h" />
+    <ClInclude Include="Lecture.h" />
     <ClInclude Include="Podium.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Jeu.c" />
+    <ClCompile Include="Lecture.c" />
     <ClCompile Include="Main.c" />
     <ClCompile Include="Podium.c" />
   </ItemGroup>
