@@ -15,13 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Jeu.h">
+    <ClInclude Include="jeu.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Podium.h">
+    <ClInclude Include="podium.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Lecture.h">
+    <ClInclude Include="lecture.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="itemliste.h">
@@ -38,16 +38,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Podium.c">
+    <ClCompile Include="podium.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Main.c">
+    <ClCompile Include="main.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Jeu.c">
+    <ClCompile Include="jeu.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Lecture.c">
+    <ClCompile Include="lecture.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="liste.c">

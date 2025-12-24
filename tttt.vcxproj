@@ -21,18 +21,18 @@
   <ItemGroup>
     <ClInclude Include="itemliste.h" />
     <ClInclude Include="itemvecteur.h" />
-    <ClInclude Include="Jeu.h" />
-    <ClInclude Include="Lecture.h" />
+    <ClInclude Include="jeu.h" />
+    <ClInclude Include="lecture.h" />
     <ClInclude Include="liste.h" />
-    <ClInclude Include="Podium.h" />
+    <ClInclude Include="podium.h" />
     <ClInclude Include="vecteur.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Jeu.c" />
-    <ClCompile Include="Lecture.c" />
+    <ClCompile Include="jeu.c" />
+    <ClCompile Include="lecture.c" />
     <ClCompile Include="liste.c" />
-    <ClCompile Include="Main.c" />
-    <ClCompile Include="Podium.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="podium.c" />
     <ClCompile Include="vecteur.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

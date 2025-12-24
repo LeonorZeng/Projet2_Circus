@@ -1,4 +1,4 @@
-﻿#include "Jeu.h"
+﻿#include "jeu.h"
 #include <string.h> // strlen
 #include <stdio.h>
 

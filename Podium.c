@@ -1,5 +1,7 @@
-﻿#include "Podium.h"
-#include <stdlib.h>
+﻿#include <stdlib.h>
+#include <assert.h>
+
+#include "podium.h"
 
 int podium_init(Podium* p, int cap) {
     return initVecteur(p, cap);
@@ -23,21 +25,21 @@ int podium_pop(Podium* p) {
 
 void podium_print(const Podium* p) {
     printf("Podium (bas -> haut): ");
-    for (int i = 0; i < p->taille; i++) {
-        printf("%d ", p->animaux[i]);
+    for (int i = 0; i < p->nbElements; i++) {
+        printf("%d ", p->elements[i]);
     }
     printf("\n");
 }
 
 int podium_bas_vers_haut(Podium* p) {
-    if (p->taille <= 1) return 0;
+    if (p->nbElements <= 1) return 0;
 
-    int bas = p->animaux[0];
+    int bas = p->elements[0];
 
-    for (int i = 0; i < p->taille - 1; i++) {
-        p->animaux[i] = p->animaux[i + 1];
+    for (int i = 0; i < p->nbElements - 1; i++) {
+        p->elements[i] = p->elements[i + 1];
     }
 
-    p->animaux[p->taille - 1] = bas;
+    p->elements[p->nbElements - 1] = bas;
     return 1;
 }
