@@ -5,15 +5,10 @@
 #include <string.h>  // strlen, strcat, strcmp
 #include <assert.h>  // assert
 
-// Quelques r�glages Visual (comme dans l'exemple prof)
+// Quelques règlages Visual (comme dans l'exemple prof)
 #pragma warning (disable : 4996)
 #pragma warning (disable : 6308 28183)
 
-/* ------------------------------------------------------------
-   1) Lire UNE ligne compl�te en concat�nant des blocs fgets.
-      -> renvoie une cha�ne allou�e (� free)
-      -> renvoie NULL si on n'a rien � lire (EOF)
-   ------------------------------------------------------------ */
 static char* read_line_concat(FILE* f) {
     enum { BUFFER_SIZE = 10 };      // volontairement petit comme dans l'exemple
     char buffer[BUFFER_SIZE];
@@ -42,10 +37,10 @@ static char* read_line_concat(FILE* f) {
                 line = (char*)realloc(line, strlen(line) + taille);
                 strcat(line, buffer);
             }
-            return line; // ligne compl�te pr�te
+            return line; // ligne complète pr�te
         }
         else {
-            // pas fin de ligne : on concat�ne et on continue
+            // pas fin de ligne : on concatène et on continue
             line = (char*)realloc(line, strlen(line) + taille + 1);
             strcat(line, buffer);
         }
@@ -60,9 +55,6 @@ static char* read_line_concat(FILE* f) {
     return NULL;
 }
 
-/* ------------------------------------------------------------
-   2) Outils pour g�rer un tableau dynamique de mots (char**)
-   ------------------------------------------------------------ */
 static void free_words(char** words, int n) {
     if (!words) return;
     for (int i = 0; i < n; i++) free(words[i]);
@@ -77,8 +69,6 @@ static char* dup_word(const char* start, int len) {
     return w;
 }
 
-// D�coupe "line" en mots s�par�s par espaces/tabs
-// -> alloue words + chaque mot
 static int split_words(const char* line, char*** out_words, int* out_n) {
     *out_words = NULL;
     *out_n = 0;
@@ -118,9 +108,6 @@ static int split_words(const char* line, char*** out_words, int* out_n) {
     return 1;
 }
 
-/* ------------------------------------------------------------
-   3) Gestion des ordres autoris�s (flags 0/1)
-   ------------------------------------------------------------ */
 static void reset_orders(Lecture* lec) {
     lec->allow_KI = 0;
     lec->allow_LO = 0;
@@ -139,9 +126,6 @@ static int apply_order_token(Lecture* lec, const char* tok) {
     return 1;
 }
 
-/* ------------------------------------------------------------
-   4) Fonctions publiques : lecture_load / lecture_free
-   ------------------------------------------------------------ */
 int lecture_load(Lecture* lec, const char* filename) {
     // init propre
     lec->animaux = NULL;

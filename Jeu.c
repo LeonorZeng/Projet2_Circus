@@ -1,5 +1,5 @@
 ﻿#include "jeu.h"
-#include <string.h> // strlen
+#include <string.h>
 #include <stdio.h>
 
 
@@ -98,7 +98,9 @@ int jeu_appliquer_sequence(Jeu* j, const Lecture* lec, const char* seq) {
 }
 
 
-static int max_int(int a, int b) { return (a > b) ? a : b; }
+static int max_int(int a, int b) { 
+    return (a > b) ? a : b; 
+}
 
 static int max_name_len(const Lecture* lec) {
     int m = 0;
@@ -110,7 +112,8 @@ static int max_name_len(const Lecture* lec) {
 }
 
 static void print_spaces(int n) {
-    for (int i = 0; i < n; i++) putchar(' ');
+    for (int i = 0; i < n; i++) 
+        print(' ');
 }
 
 static void print_center(const char* s, int width) {
@@ -143,15 +146,15 @@ void jeu_print(const Jeu* j, const Lecture* lec) {
     w = max_int(w, 5); // "ROUGE" = 5
     w = max_int(w, 4); // "----" = 4
 
-    int hb = j->bleu.taille;
-    int hr = j->rouge.taille;
+    int hb = j->bleu.nbElements;
+    int hr = j->rouge.nbElements;
     int h = max_int(hb, hr);
 
     // On affiche de haut en bas
     for (int row = h - 1; row >= 0; row--) {
         // BLEU
         if (row < hb) {
-            const char* nb = name_from_id(lec, j->bleu.animaux[row]);
+            const char* nb = name_from_id(lec, j->bleu.elements[row]);
             print_center(nb, w);
         }
         else {
@@ -163,26 +166,26 @@ void jeu_print(const Jeu* j, const Lecture* lec) {
 
         // ROUGE
         if (row < hr) {
-            const char* nr = name_from_id(lec, j->rouge.animaux[row]);
+            const char* nr = name_from_id(lec, j->rouge.elements[row]);
             print_center(nr, w);
         }
         else {
             print_blank(w);
         }
 
-        putchar('\n');
+        print('\n');
     }
 
     // ligne ---- sous chaque colonne
     print_dashes(w);
     print_spaces(2);
     print_dashes(w);
-    putchar('\n');
+    print('\n');
 
     // labels
     print_center("BLEU", w);
     print_spaces(2);
     print_center("ROUGE", w);
-    putchar('\n');
+    print('\n');
 }
 

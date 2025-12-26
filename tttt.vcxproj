@@ -19,18 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="itemliste.h" />
     <ClInclude Include="itemvecteur.h" />
     <ClInclude Include="jeu.h" />
     <ClInclude Include="lecture.h" />
-    <ClInclude Include="liste.h" />
     <ClInclude Include="podium.h" />
     <ClInclude Include="vecteur.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="jeu.c" />
     <ClCompile Include="lecture.c" />
-    <ClCompile Include="liste.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="podium.c" />
     <ClCompile Include="vecteur.c" />
