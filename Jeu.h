@@ -9,7 +9,7 @@ typedef struct {
 } Jeu;
 
 // Initialisation / libération
-int jeu_init(Jeu* j, const Lecture* lec);
+void jeu_init(Jeu* j, const Lecture* lec);
 void jeu_free(Jeu* j);
 
 // Ordres

@@ -24,9 +24,11 @@ void jeu_free(Jeu* j) {
 // --------------------
 // Ordres
 // --------------------
-void ordre_KI(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_KI) 
+int ordre_KI(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_KI) {
         printf("L'ordre KI n'est pas accepter. Veuillez changer d'ordre.");
+        return 0;
+    }
 
     int a;
     a = podium_pop(&j->bleu);
@@ -35,9 +37,11 @@ void ordre_KI(Jeu* j, const Lecture* lec) {
     return 1;
 }
 
-void ordre_LO(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_LO)
+int ordre_LO(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_LO) {
         printf("L'ordre LO n'est pas accepter. Veuillez changer d'ordre.");
+        return 0;
+    }
 
     int a;
     a = podium_pop(&j->rouge);
@@ -46,9 +50,11 @@ void ordre_LO(Jeu* j, const Lecture* lec) {
     return 1;
 }
 
-void ordre_SO(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_SO)
+int ordre_SO(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_SO) {
         printf("L'ordre SO n'est pas accepter. Veuillez changer d'ordre.");
+        return 0;
+    }
 
     int ab, ar; 
     ab = podium_pop(&j->bleu);
@@ -64,19 +70,29 @@ void ordre_SO(Jeu* j, const Lecture* lec) {
     return 1;
 }
 
-void ordre_NI(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_NI)
+int ordre_NI(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_NI) {
         printf("L'ordre NI n'est pas accepter. Veuillez changer d'ordre.");
+        return 0;
+    }
 
-    if (!podium_bas_vers_haut(&j->bleu))
+    if (!podium_bas_vers_haut(&j->bleu)) {
         printf("Malheureusement l'ordre NI n'a pas marcher");
+        return 0;
+    }
+    return 1;
 }
 
-void ordre_MA(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_MA)
+int ordre_MA(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_MA) {
         printf("L'ordre MA n'est pas accepter. Veuillez changer d'ordre.");
-    if (!podium_bas_vers_haut(&j->rouge))
+        return 0;
+    }
+    if (!podium_bas_vers_haut(&j->rouge)) {
         printf("Malheureusement l'ordre MA n'a pas marcher");
+        return 0;
+    }
+    return 1;
 }
 
 
