@@ -3,7 +3,7 @@
 
 #include "podium.h"
 
-int podium_init(Podium* p, int cap) {
+int initPodium(Podium* p, int cap) {
     return initVecteur(p, cap);
 }
 

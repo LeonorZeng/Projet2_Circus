@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <stdio.h> 
 
 typedef struct {
     char** animaux;     // tableau dynamique de chaines (noms des animaux)

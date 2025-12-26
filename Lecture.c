@@ -13,12 +13,12 @@ static char* read_line_concat(FILE* f) {
     enum { BUFFER_SIZE = 10 };      // volontairement petit comme dans l'exemple
     char buffer[BUFFER_SIZE];
 
-    // On accumule la ligne compl�te dans "line"
-    char* line = (char*)calloc(1, 1);   // cha�ne vide ""
+    // On accumule la ligne complète dans "line"
+    char* line = (char*)calloc(1, 1);   // chaine vide ""
     if (line == NULL) return NULL;
 
     char* s = fgets(buffer, BUFFER_SIZE, f);
-    if (s == NULL) {   // EOF direct
+    if (s == NULL) {   // End-Of-File directe
         free(line);
         return NULL;
     }

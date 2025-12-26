@@ -39,4 +39,3 @@ static void print_dashes(int width);
 
 static const char* name_from_id(const Lecture* lec, int id);
 
-void jeu_print(const Jeu* j, const Lecture* lec);

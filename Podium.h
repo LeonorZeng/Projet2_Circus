@@ -12,7 +12,7 @@ typedef Vecteur Podium;
  * @return 0 en cas d'échec (manque de mémoire disponible) et 1 en cas de succès.
  * @pre <code>capacite</code> doit être supérieur ou égal à 1.
  */
-int podium_init(Podium* p, int cap);
+int initPodium(Podium* p, int cap);
 
 /**
  * @brief Libère l'espace mémoire occupé par un podium. Après avoir été détruit, il ne doit
