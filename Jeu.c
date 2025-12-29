@@ -2,133 +2,9 @@
 #include <string.h>
 #include <stdio.h>
 
+/* ===================== HELPERS AFFICHAGE (static) ===================== */
 
-
-// --------------------
-// Initialisation / fin
-// --------------------
-void jeu_init(Jeu* j, const Lecture* lec) {
-    if (!initPodium(&j->bleu, lec->n_animaux))
-        printf("La création des podiums n'est pas possible veuillez relancer le jeu ou rééssayer plus tard");
-    if (!initPodium(&j->rouge, lec->n_animaux)) {
-        podium_free(&j->bleu);
-        printf("La création des podiums n'est pas possible veuillez relancer le jeu ou rééssayer plus tard");
-    }
-}
-
-void jeu_free(Jeu* j) {
-    podium_free(&j->bleu);
-    podium_free(&j->rouge);
-}
-
-// --------------------
-// Ordres
-// --------------------
-int ordre_KI(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_KI) {
-        printf("L'ordre KI n'est pas accepter. Veuillez changer d'ordre.");
-        return 0;
-    }
-
-    int a;
-    a = podium_pop(&j->bleu);
-    if (!a) return 0;
-    podium_push(&j->rouge, a);
-    return 1;
-}
-
-int ordre_LO(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_LO) {
-        printf("L'ordre LO n'est pas accepter. Veuillez changer d'ordre.");
-        return 0;
-    }
-
-    int a;
-    a = podium_pop(&j->rouge);
-    if (!a) return 0;
-    podium_push(&j->bleu, a);
-    return 1;
-}
-
-int ordre_SO(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_SO) {
-        printf("L'ordre SO n'est pas accepter. Veuillez changer d'ordre.");
-        return 0;
-    }
-
-    int ab, ar; 
-    ab = podium_pop(&j->bleu);
-    ar = podium_pop(&j->rouge);
-    if (!ab) return 0;
-    if (!ar) {
-        podium_push(&j->bleu, ab);
-        return 0;
-    }
-
-    podium_push(&j->bleu, ar);
-    podium_push(&j->rouge, ab);
-    return 1;
-}
-
-int ordre_NI(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_NI) {
-        printf("L'ordre NI n'est pas accepter. Veuillez changer d'ordre.");
-        return 0;
-    }
-
-    if (!podium_bas_vers_haut(&j->bleu)) {
-        printf("Malheureusement l'ordre NI n'a pas marcher");
-        return 0;
-    }
-    return 1;
-}
-
-int ordre_MA(Jeu* j, const Lecture* lec) {
-    if (!lec->allow_MA) {
-        printf("L'ordre MA n'est pas accepter. Veuillez changer d'ordre.");
-        return 0;
-    }
-    if (!podium_bas_vers_haut(&j->rouge)) {
-        printf("Malheureusement l'ordre MA n'a pas marcher");
-        return 0;
-    }
-    return 1;
-}
-
-
-int jeu_appliquer_sequence(Jeu* j, const Lecture* lec, const char* seq) {
-    if (seq == NULL) return 0;
-
-    size_t len = strlen(seq);
-
-    if (len % 2 != 0)
-        return 0;
-
-    for (size_t i = 0; i < len; i += 2) {
-        char ordre[3];
-        ordre[0] = seq[i];
-        ordre[1] = seq[i + 1];
-        ordre[2] = '\0';
-
-        int ok;
-
-        if (strcmp(ordre, "KI") == 0) ok = ordre_KI(j, lec);
-        else if (strcmp(ordre, "LO") == 0) ok = ordre_LO(j, lec);
-        else if (strcmp(ordre, "SO") == 0) ok = ordre_SO(j, lec);
-        else if (strcmp(ordre, "NI") == 0) ok = ordre_NI(j, lec);
-        else if (strcmp(ordre, "MA") == 0) ok = ordre_MA(j, lec);
-        else return 0;
-
-        if (!ok) return 0;
-    }
-
-    return 1;
-}
-
-
-static int max_int(int a, int b) { 
-    return (a > b) ? a : b; 
-}
+static int max_int(int a, int b) { return (a > b) ? a : b; }
 
 static int max_name_len(const Lecture* lec) {
     int m = 0;
@@ -139,12 +15,9 @@ static int max_name_len(const Lecture* lec) {
     return m;
 }
 
-void print_spaces(int n) {
-    for (int i = 0; i < n; i++) 
-        putchar(' ');
-}
+static void print_spaces(int n) { for (int i = 0; i < n; i++) putchar(' '); }
 
-void print_center(const char* s, int width) {
+static void print_center(const char* s, int width) {
     int len = (int)strlen(s);
     int left = (width - len) / 2;
     int right = width - len - left;
@@ -153,49 +26,175 @@ void print_center(const char* s, int width) {
     print_spaces(right);
 }
 
-static void print_blank(int width) {
-    print_spaces(width);
-}
+static void print_blank(int width) { print_spaces(width); }
 
-// Affiche une ligne "----" centr�e dans la largeur de colonne
-static void print_dashes(int width) {
-    const char* d = "----";
-    print_center(d, width);
-}
+static void print_dashes(int width) { print_center("----", width); }
 
 static const char* name_from_id(const Lecture* lec, int id) {
     if (id < 0 || id >= lec->n_animaux) return "";
     return lec->animaux[id];
 }
 
+/* ===================== CLONE / EQUALS (static + publics) ===================== */
+
+static int podium_clone(Podium* dst, const Podium* src) {
+    // On reste cohérent avec l'API Podium
+    if (!initPodium(dst, src->capacite)) return 0;
+
+    for (int i = 0; i < src->nbElements; i++) {
+        ItemV it = obtenir(src, i);
+        if (!ajouter(dst, it)) {
+            podium_free(dst);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int podium_equals(const Podium* a, const Podium* b) {
+    if (a->nbElements != b->nbElements) return 0;
+
+    for (int i = 0; i < a->nbElements; i++) {
+        if (obtenir(a, i) != obtenir(b, i)) return 0;
+    }
+    return 1;
+}
+
+int jeu_clone(Jeu* dst, const Jeu* src) {
+    if (!podium_clone(&dst->bleu, &src->bleu)) return 0;
+
+    if (!podium_clone(&dst->rouge, &src->rouge)) {
+        podium_free(&dst->bleu);
+        return 0;
+    }
+    return 1;
+}
+
+int jeu_equals(const Jeu* a, const Jeu* b) {
+    return podium_equals(&a->bleu, &b->bleu) &&
+        podium_equals(&a->rouge, &b->rouge);
+}
+
+int sequence_reussit(const Jeu* depart, const Jeu* objectif,
+    const Lecture* lec, const char* seq) {
+    Jeu tmp;
+    if (!jeu_clone(&tmp, depart)) return 0;
+
+    int ok = jeu_appliquer_sequence(&tmp, lec, seq) &&
+        jeu_equals(&tmp, objectif);
+
+    jeu_free(&tmp);
+    return ok;
+}
+
+/* ===================== INIT / FREE ===================== */
+
+int jeu_init(Jeu* j, const Lecture* lec) {
+    if (!initPodium(&j->bleu, lec->n_animaux)) return 0;
+
+    if (!initPodium(&j->rouge, lec->n_animaux)) {
+        podium_free(&j->bleu);
+        return 0;
+    }
+    return 1;
+}
+
+void jeu_free(Jeu* j) {
+    podium_free(&j->bleu);
+    podium_free(&j->rouge);
+}
+
+/* ===================== ORDRES ===================== */
+
+int ordre_KI(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_KI) return 0;
+    if (j->bleu.nbElements == 0) return 0;
+
+    int a = podium_pop(&j->bleu);
+    return podium_push(&j->rouge, a);
+}
+
+int ordre_LO(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_LO) return 0;
+    if (j->rouge.nbElements == 0) return 0;
+
+    int a = podium_pop(&j->rouge);
+    return podium_push(&j->bleu, a);
+}
+
+int ordre_SO(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_SO) return 0;
+    if (j->bleu.nbElements == 0) return 0;
+    if (j->rouge.nbElements == 0) return 0;
+
+    int ab = podium_pop(&j->bleu);
+    int ar = podium_pop(&j->rouge);
+
+    // On suppose que push ne peut pas échouer ici car capacité = n_animaux
+    podium_push(&j->bleu, ar);
+    podium_push(&j->rouge, ab);
+    return 1;
+}
+
+int ordre_NI(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_NI) return 0;
+    return podium_bas_vers_haut(&j->bleu);
+}
+
+int ordre_MA(Jeu* j, const Lecture* lec) {
+    if (!lec->allow_MA) return 0;
+    return podium_bas_vers_haut(&j->rouge);
+}
+
+/* ===================== SEQUENCE ===================== */
+
+int jeu_appliquer_sequence(Jeu* j, const Lecture* lec, const char* seq) {
+    if (seq == NULL) return 0;
+
+    size_t len = strlen(seq);
+    if (len % 2 != 0) return 0;
+
+    for (size_t i = 0; i < len; i += 2) {
+        char ordre[3] = { seq[i], seq[i + 1], '\0' };
+
+        int ok = 0;
+        if (strcmp(ordre, "KI") == 0) ok = ordre_KI(j, lec);
+        else if (strcmp(ordre, "LO") == 0) ok = ordre_LO(j, lec);
+        else if (strcmp(ordre, "SO") == 0) ok = ordre_SO(j, lec);
+        else if (strcmp(ordre, "NI") == 0) ok = ordre_NI(j, lec);
+        else if (strcmp(ordre, "MA") == 0) ok = ordre_MA(j, lec);
+        else return 0; // ordre inconnu
+
+        if (!ok) return 0;
+    }
+    return 1;
+}
+
+/* ===================== AFFICHAGE STRICT ===================== */
+
 void jeu_print(const Jeu* j, const Lecture* lec) {
-    // largeur de colonne = max(longueur des noms, longueur de "ROUGE", 4)
     int w = max_name_len(lec);
-    w = max_int(w, 5); // "ROUGE" = 5
-    w = max_int(w, 4); // "----" = 4
+    w = max_int(w, 5); // "ROUGE"
+    w = max_int(w, 4); // "----"
 
     int hb = j->bleu.nbElements;
     int hr = j->rouge.nbElements;
     int h = max_int(hb, hr);
 
-    // On affiche de haut en bas
     for (int row = h - 1; row >= 0; row--) {
-        // BLEU
         if (row < hb) {
-            const char* nb = name_from_id(lec, j->bleu.elements[row]);
-            print_center(nb, w);
+            int id = j->bleu.elements[row];
+            print_center(name_from_id(lec, id), w);
         }
         else {
             print_blank(w);
         }
 
-        // espace entre colonnes (comme sur l'exemple)
         print_spaces(2);
 
-        // ROUGE
         if (row < hr) {
-            const char* nr = name_from_id(lec, j->rouge.elements[row]);
-            print_center(nr, w);
+            int id = j->rouge.elements[row];
+            print_center(name_from_id(lec, id), w);
         }
         else {
             print_blank(w);
@@ -204,16 +203,13 @@ void jeu_print(const Jeu* j, const Lecture* lec) {
         putchar('\n');
     }
 
-    // ligne ---- sous chaque colonne
     print_dashes(w);
     print_spaces(2);
     print_dashes(w);
     putchar('\n');
 
-    // labels
     print_center("BLEU", w);
     print_spaces(2);
     print_center("ROUGE", w);
     putchar('\n');
 }
-
