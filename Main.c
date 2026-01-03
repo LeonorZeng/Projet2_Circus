@@ -341,9 +341,7 @@ int main(int argc, const char* argv[]) {
 
     /* 2) Lire crazy.cfg (2 lignes) : */
     Lecture lec;
-    if (!lecture_load(&lec, "C:\\Users\\nazda\\source\\repos\\Projet2_Circus\\x64\\Debug\\crazy.cfg")
-        ) {
-        printf("Erreur: fichier crazy.cfg invalide.\n");
+    if (!lecture_load(&lec, ".\\crazy.cfg")) {
         return 0;
     }
 
