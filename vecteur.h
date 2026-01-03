@@ -3,85 +3,85 @@
 #include "itemvecteur.h"
 
 /**
- * @brief Conteneur stockant des éléments accessibles en 
+ * @brief Conteneur stockant des ¨¦l¨¦ments accessibles en
  * fonction de leur position (indice).
  */
 typedef struct {
-	int nbElements; ///< Nombre d'éléments présents dans le vecteur.
-	int capacite;	///< Nombre d'éléments maximal du vecteur.
+	int nbElements; ///< Nombre d'¨¦l¨¦ments pr¨¦sents dans le vecteur.
+	int capacite;	///< Nombre d'¨¦l¨¦ments maximal du vecteur.
 	ItemV* elements; ///< Tableau (dynamique) de taille <code>capacite</code>.
 } Vecteur;
 
 /**
- * @brief Initialise un vecteur d'une capacité donnée contenant aucun élément.
- * Après son utilisation, la mémoire occupée par un vecteur doit être libérée 
+ * @brief Initialise un vecteur d'une capacit¨¦ donn¨¦e contenant aucun ¨¦l¨¦ment.
+ * Apr¨¨s son utilisation, la m¨¦moire occup¨¦e par un vecteur doit ¨ºtre lib¨¦r¨¦e
  * en invoquant la fonction @ref detruireVecteur.
- * @param[out] v L'adresse du vecteur à initialiser.
- * @param[in] capacite La capacité initiale du vecteur.
- * @return 0 en cas d'échec (manque de mémoire disponible) et 1 en cas de succès.
- * @pre <code>capacite</code> doit être supérieur ou égal à 1.
+ * @param[out] v L'adresse du vecteur ¨¤ initialiser.
+ * @param[in] capacite La capacit¨¦ initiale du vecteur.
+ * @return 0 en cas d'¨¦chec (manque de m¨¦moire disponible) et 1 en cas de succ¨¨s.
+ * @pre <code>capacite</code> doit ¨ºtre sup¨¦rieur ou ¨¦gal ¨¤ 1.
  */
 int initVecteur(Vecteur* v, int capacite);
 
 /**
- * @brief Retourne le nombre d'éléments présents dans un vecteur.
+ * @brief Retourne le nombre d'¨¦l¨¦ments pr¨¦sents dans un vecteur.
  * @param[in] v L'adresse du vecteur.
- * @return Le nombre d'éléments contenu dans <code>v</code>.
+ * @return Le nombre d'¨¦l¨¦ments contenu dans <code>v</code>.
  */
 int taille(const Vecteur* v);
 
 /**
- * @brief Ajoute un élément dans un vecteur. Cet élément est ajouté après ceux déjà présents.
+ * @brief Ajoute un ¨¦l¨¦ment dans un vecteur. Cet ¨¦l¨¦ment est ajout¨¦ apr¨¨s ceux d¨¦j¨¤ pr¨¦sents.
  * @param[in,out] v L'adresse du vecteur.
- * @param[in] it L'élément devant être ajouté.
- * @return 0 en cas d'échec (manque de mémoire disponible) et 1 en cas de succès.
+ * @param[in] it L'¨¦l¨¦ment devant ¨ºtre ajout¨¦.
+ * @return 0 en cas d'¨¦chec (manque de m¨¦moire disponible) et 1 en cas de succ¨¨s.
  */
 int ajouter(Vecteur* v, ItemV it);
 
 /**
- * @brief Retourne l'élément d'un vecteur se trouvant à une position donnée.
- * @param[in] v L'adresse du vecteur. 
+ * @brief Retourne l'¨¦l¨¦ment d'un vecteur se trouvant ¨¤ une position donn¨¦e.
+ * @param[in] v L'adresse du vecteur.
  * @param[in] i La position (i.e. l'indice).
- * @return L'élément de <code>v</code> se trouvant à l'indice <code>i</code>.
- * @pre La valeur de <code>i</code> doit être comprise entre 0 et 
+ * @return L'¨¦l¨¦ment de <code>v</code> se trouvant ¨¤ l'indice <code>i</code>.
+ * @pre La valeur de <code>i</code> doit ¨ºtre comprise entre 0 et
  * <code>(taille(v) - 1)</code> (inclus).
  */
 ItemV obtenir(const Vecteur* v, int i);
 
 /**
- * @brief Modifie un élément d'un vecteur.
+ * @brief Modifie un ¨¦l¨¦ment d'un vecteur.
  * @param[in,out] v L'adresse du vecteur.
- * @param[in] i La position (i.e. l'indice) de l'élément devant être modifié.
- * @param[in] it La nouvelle valeur de l'élément.
- * @pre La valeur de <code>i</code> doit être comprise entre 0 et
+ * @param[in] i La position (i.e. l'indice) de l'¨¦l¨¦ment devant ¨ºtre modifi¨¦.
+ * @param[in] it La nouvelle valeur de l'¨¦l¨¦ment.
+ * @pre La valeur de <code>i</code> doit ¨ºtre comprise entre 0 et
  * <code>(taille(v) - 1)</code> (inclus).
  */
 void modifier(Vecteur* v, int i, ItemV it);
 
 /**
- * @brief Supprime un élément d'un vecteur.
+ * @brief Supprime un ¨¦l¨¦ment d'un vecteur.
  * @param[in,out] v L'adresse du vecteur.
- * @param[in] i La position (i.e. l'indice) de l'élément devant être supprimé.
- * @pre La valeur de <code>i</code> doit être comprise entre 0 et
+ * @param[in] i La position (i.e. l'indice) de l'¨¦l¨¦ment devant ¨ºtre supprim¨¦.
+ * @pre La valeur de <code>i</code> doit ¨ºtre comprise entre 0 et
  * <code>(taille(v) - 1)</code> (inclus).
  */
 void supprimer(Vecteur* v, int i);
 
 /**
- * @brief Modifie la capacité courante d'un vecteur. Si la nouvelle capacité du vecteur 
- * excède le nombre d'éléments qu'il contient, tous ses éléments sont conservés. Dans
- * le cas contraire, les éléments excédentaires sont perdus.
+ * @brief Modifie la capacit¨¦ courante d'un vecteur. Si la nouvelle capacit¨¦ du vecteur
+ * exc¨¨de le nombre d'¨¦l¨¦ments qu'il contient, tous ses ¨¦l¨¦ments sont conserv¨¦s. Dans
+ * le cas contraire, les ¨¦l¨¦ments exc¨¦dentaires sont perdus.
  * @param[in,out] v L'adresse du vecteur.
- * @param[in] taille La nouvelle capacité.
- * @return 0 en cas d'échec (manque de mémoire disponible) et 1 en cas de succès.
- * @pre La nouvelle capacité doit être supérieure ou égale à 1.
+ * @param[in] taille La nouvelle capacit¨¦.
+ * @return 0 en cas d'¨¦chec (manque de m¨¦moire disponible) et 1 en cas de succ¨¨s.
+ * @pre La nouvelle capacit¨¦ doit ¨ºtre sup¨¦rieure ou ¨¦gale ¨¤ 1.
  */
 int retailler(Vecteur* v, int taille);
 
 /**
- * @brief Libère l'espace mémoire occupé par un vecteur. Après avoir été détruit, il ne doit
- * pas être ré-employé sans avoir été ré-initialisé. Toute autre opération peut donner des 
- * résultats incohérent ou même provoquer l'arrêt brutal du programme.
+ * @brief Lib¨¨re l'espace m¨¦moire occup¨¦ par un vecteur. Apr¨¨s avoir ¨¦t¨¦ d¨¦truit, il ne doit
+ * pas ¨ºtre r¨¦-employ¨¦ sans avoir ¨¦t¨¦ r¨¦-initialis¨¦. Toute autre op¨¦ration peut donner des
+ * r¨¦sultats incoh¨¦rent ou m¨ºme provoquer l'arr¨ºt brutal du programme.
  * @param[in,out] v L'adresse du vecteur.
  */
 void detruireVecteur(Vecteur* v);

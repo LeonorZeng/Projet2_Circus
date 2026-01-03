@@ -1,4 +1,4 @@
-#include <stdio.h>
+ï»¿#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -26,7 +26,7 @@ static int index_joueur(int n, const char* noms[], const char* id) {
     return -1;
 }
 
-/* Tri des scores: score décroissant, puis nom croissant */
+/* Tri des scores: score dï¿½croissant, puis nom croissant */
 typedef struct {
     const char* nom; /* pointe vers argv */
     int score;
@@ -36,8 +36,8 @@ static int cmp_scoreline(const void* a, const void* b) {
     const ScoreLine* A = (const ScoreLine*)a;
     const ScoreLine* B = (const ScoreLine*)b;
 
-    if (A->score != B->score) return (B->score - A->score); /* décroissant */
-    return strcmp(A->nom, B->nom);                           /* alphabétique */
+    if (A->score != B->score) return (B->score - A->score); /* dï¿½croissant */
+    return strcmp(A->nom, B->nom);                           /* alphabï¿½tique */
 }
 
 static void print_scores_fin(int n, const char* noms[], const int scores[]) {
@@ -59,13 +59,13 @@ static void print_scores_fin(int n, const char* noms[], const int scores[]) {
 }
 
 /* =========================
-   Ligne d'ordres autorisés
+   Ligne d'ordres autorisï¿½s
    ========================= */
-   /* Doit afficher la ligne en se limitant aux ordres autorisés :contentReference[oaicite:9]{index=9} */
+   /* Doit afficher la ligne en se limitant aux ordres autorisï¿½s :contentReference[oaicite:9]{index=9} */
 static void print_ligne_ordres(const Lecture* lec) {
     int first = 1;
 
-    /* ordre d'affichage demandé dans le sujet */
+    /* ordre d'affichage demandï¿½ dans le sujet */
     if (lec->allow_KI) {
         if (!first) printf(" | ");
         printf("KI (B -> R)");
@@ -96,7 +96,7 @@ static void print_ligne_ordres(const Lecture* lec) {
 }
 
 /* =========================
-   Génération des "cartes position"
+   Gï¿½nï¿½ration des "cartes position"
    (toutes les positions possibles)
    ========================= */
 
@@ -140,7 +140,7 @@ static void gen_cards_rec(int n, int depth, int* perm, int* used,
             c->rouge = (n - k > 0) ? (int*)malloc((size_t)(n - k) * sizeof(int)) : NULL;
 
             if ((k > 0 && !c->bleu) || (n - k > 0 && !c->rouge)) {
-                /* si manque mémoire: on met une carte vide (et on continue) */
+                /* si manque mï¿½moire: on met une carte vide (et on continue) */
                 free(c->bleu); free(c->rouge);
                 c->bleu = NULL; c->rouge = NULL;
                 c->nb_bleu = 0; c->nb_rouge = 0;
@@ -188,7 +188,7 @@ static Card* build_all_cards(int n_animaux, int* out_nb_cards) {
     return cards;
 }
 
-/* Mélange Fisher-Yates */
+/* Mï¿½lange Fisher-Yates */
 static void shuffle_cards(Card* cards, int n) {
     for (int i = n - 1; i > 0; i--) {
         int j = rand() % (i + 1);
@@ -218,7 +218,7 @@ static int jeu_from_card(Jeu* j, const Lecture* lec, const Card* c) {
 
 /* =========================
    Affichage "situation" (strict)
-   - gauche = départ
+   - gauche = dï¿½part
    - droite = objectif
    - la ligne des dashes contient " ==> "
    ========================= */
@@ -253,7 +253,7 @@ static const char* name_from_id(const Lecture* lec, int id) {
     return lec->animaux[id];
 }
 
-/* Affiche 2 jeux côte à côte selon le format de l’énoncé :contentReference[oaicite:11]{index=11} */
+/* Affiche 2 jeux cï¿½te ï¿½ cï¿½te selon le format de lï¿½ï¿½noncï¿½ :contentReference[oaicite:11]{index=11} */
 static void print_situation(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
     int w = max_name_len(lec);
     w = max_int(w, 5);
@@ -347,7 +347,7 @@ int main(int argc, const char* argv[]) {
         return 0;
     }
 
-    /* vérif: animaux >= 2, ordres >= 3 (sinon stop immédiat) :contentReference[oaicite:14]{index=14} */
+    /* vï¿½rif: animaux >= 2, ordres >= 3 (sinon stop immï¿½diat) :contentReference[oaicite:14]{index=14} */
     int nb_ordres = lec.allow_KI + lec.allow_LO + lec.allow_SO + lec.allow_NI + lec.allow_MA;
     if (lec.n_animaux < 2 || nb_ordres < 3) {
         printf("Erreur: configuration invalide (animaux>=2, ordres>=3).\n");
@@ -355,10 +355,10 @@ int main(int argc, const char* argv[]) {
         return 0;
     }
 
-    /* 3) Afficher la ligne des ordres autorisés :contentReference[oaicite:15]{index=15} */
+    /* 3) Afficher la ligne des ordres autorisï¿½s :contentReference[oaicite:15]{index=15} */
     print_ligne_ordres(&lec);
 
-    /* 4) Générer toutes les cartes positions, mélanger, et en consommer sans remise :contentReference[oaicite:16]{index=16} */
+    /* 4) Gï¿½nï¿½rer toutes les cartes positions, mï¿½langer, et en consommer sans remise :contentReference[oaicite:16]{index=16} */
     srand((unsigned)time(NULL));
 
     int nb_cards = 0;
@@ -370,7 +370,7 @@ int main(int argc, const char* argv[]) {
     }
     shuffle_cards(deck, nb_cards);
 
-    /* 5) Score + état du tour */
+    /* 5) Score + ï¿½tat du tour */
     int* scores = (int*)calloc((size_t)n_joueurs, sizeof(int));
     int* can_play = (int*)malloc((size_t)n_joueurs * sizeof(int));
     if (!scores || !can_play) {
@@ -399,22 +399,22 @@ int main(int argc, const char* argv[]) {
     /* afficher situation initiale :contentReference[oaicite:17]{index=17} */
     print_situation(&depart, &objectif, &lec);
 
-    /* 7) Boucle de jeu: tant qu’il reste des cartes objectif */
+    /* 7) Boucle de jeu: tant quï¿½il reste des cartes objectif */
     char line[2048];
     while (1) {
         /* nouveau tour: tout le monde peut jouer */
         for (int i = 0; i < n_joueurs; i++) can_play[i] = 1;
 
         /* si plus de carte objectif => fin */
-        if (deck_i > nb_cards) break; /* sécurité */
+        if (deck_i > nb_cards) break; /* sï¿½curitï¿½ */
         if (deck_i == nb_cards) {
-            /* plus de nouvelle carte objectif disponible => partie terminée :contentReference[oaicite:18]{index=18} */
+            /* plus de nouvelle carte objectif disponible => partie terminï¿½e :contentReference[oaicite:18]{index=18} */
             break;
         }
 
-        /* tour courant: lire des propositions jusqu’à ce que quelqu’un gagne */
+        /* tour courant: lire des propositions jusquï¿½ï¿½ ce que quelquï¿½un gagne */
         while (fgets(line, (int)sizeof(line), stdin) != NULL) {
-            /* ignorer lignes vides / "." (dans l’annexe on voit un "." tapé) :contentReference[oaicite:19]{index=19} */
+            /* ignorer lignes vides / "." (dans lï¿½annexe on voit un "." tapï¿½) :contentReference[oaicite:19]{index=19} */
             if (line[0] == '\n' || (line[0] == '.' && (line[1] == '\n' || line[1] == '\0'))) {
                 continue;
             }
@@ -422,7 +422,7 @@ int main(int argc, const char* argv[]) {
             char id[128], seq[1024];
             int nread = sscanf(line, " %127s %1023s", id, seq);
             if (nread < 2) {
-                /* entrée pas au format "ID SEQ" -> message libre 1 ligne */
+                /* entrï¿½e pas au format "ID SEQ" -> message libre 1 ligne */
                 printf("Entree invalide.\n");
                 continue;
             }
@@ -438,7 +438,7 @@ int main(int argc, const char* argv[]) {
                 continue;
             }
 
-            /* tester la séquence: on clone depart, on applique, puis on compare à objectif */
+            /* tester la sï¿½quence: on clone depart, on applique, puis on compare ï¿½ objectif */
             Jeu tmp;
             if (!jeu_clone(&tmp, &depart)) {
                 printf("Erreur memoire.\n");
@@ -454,7 +454,7 @@ int main(int argc, const char* argv[]) {
                 scores[pj] += 1;
                 printf("%s gagne un point\n", id);
 
-                /* nouveau départ = objectif atteint */
+                /* nouveau dï¿½part = objectif atteint */
                 jeu_free(&depart);
                 depart = objectif; /* copie de struct (les vecteurs restent valides) */
 
@@ -469,7 +469,7 @@ int main(int argc, const char* argv[]) {
                 break; /* fin de tour */
             }
             else {
-                /* mauvaise séquence -> joueur éliminé du tour :contentReference[oaicite:20]{index=20} */
+                /* mauvaise sï¿½quence -> joueur ï¿½liminï¿½ du tour :contentReference[oaicite:20]{index=20} */
                 can_play[pj] = 0;
                 printf("Sequence invalide: %s ne peut plus jouer durant ce tour\n", id);
 
@@ -483,7 +483,7 @@ int main(int argc, const char* argv[]) {
                     scores[last] += 1;
                     printf("%s gagne un point car lui seul peut encore jouer durant ce tour\n", joueurs[last]);
 
-                    /* nouveau départ = objectif (même si personne n’a trouvé la séquence) */
+                    /* nouveau dï¿½part = objectif (mï¿½me si personne nï¿½a trouvï¿½ la sï¿½quence) */
                     jeu_free(&depart);
                     depart = objectif;
 
@@ -504,7 +504,7 @@ int main(int argc, const char* argv[]) {
     }
 
 fin_partie:
-    /* 8) Fin: afficher scores triés (strict) :contentReference[oaicite:22]{index=22} */
+    /* 8) Fin: afficher scores triÃ©s (strict) :contentReference[oaicite:22]{index=22} */
     print_scores_fin(n_joueurs, joueurs, scores);
 
     /* lib jeux */

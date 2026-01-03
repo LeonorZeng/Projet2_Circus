@@ -35,7 +35,6 @@ int podium_push(Podium* p, int animal);
  * @param[in,out] p L'adresse du podium.
  * @return la valeur du dernier élément ajouter
  */
-// Dépile (pop) le sommet. Renvoie 1 si OK, 0 si vide.
 int podium_pop(Podium* p);
 
 // Affichage debug (bas -> haut) en nombres
