@@ -1,9 +1,9 @@
-﻿#include "Lecture.h"
-
-#include <stdio.h>   // fopen, fgets, fclose, printf
+﻿#include <stdio.h>   // fopen, fgets, fclose, printf
 #include <stdlib.h>  // calloc, malloc, realloc, free
 #include <string.h>  // strlen, strcat, strcmp
 #include <assert.h>  // assert
+
+#include "Lecture.h"
 
 // Quelques réglages Visual (comme dans l'exemple prof)
 #pragma warning (disable : 4996)
@@ -217,4 +217,10 @@ void lecture_free(Lecture* lec) {
     lec->animaux = NULL;
     lec->n_animaux = 0;
     reset_orders(lec);
+}
+
+const char* name_from_id(const Lecture* lec, int id) {
+    if (id < 0 || id >= lec->n_animaux) 
+        return "Veuillez changez de id. Celui-ci n'est pas valide.";
+    return lec->animaux[id];
 }

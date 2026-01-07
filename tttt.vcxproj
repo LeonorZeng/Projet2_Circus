@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="card.h" />
     <ClInclude Include="itemvecteur.h" />
     <ClInclude Include="jeu.h" />
     <ClInclude Include="lecture.h" />
@@ -26,6 +27,7 @@
     <ClInclude Include="vecteur.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="card.c" />
     <ClCompile Include="jeu.c" />
     <ClCompile Include="lecture.c" />
     <ClCompile Include="main.c" />

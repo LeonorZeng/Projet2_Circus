@@ -19,6 +19,8 @@ int lecture_load(Lecture* lec, const char* filename);
 // Libère toute la mémoire dynamique associée à Lecture
 void lecture_free(Lecture* lec);
 
+const char* name_from_id(const Lecture* lec, int id);
+
 // Fonctions internes (utilisées uniquement dans Lecture.c)
 static char* read_line_concat(FILE* f);
 static void free_words(char** words, int n);

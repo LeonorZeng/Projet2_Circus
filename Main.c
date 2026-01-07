@@ -5,325 +5,24 @@
 
 #include "lecture.h"
 #include "jeu.h"
+#include "card.h"
 
-/* =========================
-   Outils joueurs / scores
-   ========================= */
-
-static int joueurs_distincts(int n, const char* noms[]) {
-    for (int i = 0; i < n; i++) {
-        for (int k = i + 1; k < n; k++) {
-            if (strcmp(noms[i], noms[k]) == 0) return 0;
-        }
-    }
-    return 1;
-}
-
-static int index_joueur(int n, const char* noms[], const char* id) {
-    for (int i = 0; i < n; i++) {
-        if (strcmp(noms[i], id) == 0) return i;
-    }
-    return -1;
-}
 
 /* Tri des scores: score décroissant, puis nom croissant */
 typedef struct {
-    const char* nom; /* pointe vers argv */
+    const char* nom; //pointe vers argv
     int score;
 } ScoreLine;
 
-static int cmp_scoreline(const void* a, const void* b) {
-    const ScoreLine* A = (const ScoreLine*)a;
-    const ScoreLine* B = (const ScoreLine*)b;
+// Une carte = contenu bleu + contenu rouge (bas->haut), avec des ids d'animaux [0..n-1]
 
-    if (A->score != B->score) return (B->score - A->score); /* décroissant */
-    return strcmp(A->nom, B->nom);                           /* alphabétique */
-}
-
-static void print_scores_fin(int n, const char* noms[], const int scores[]) {
-    ScoreLine* t = (ScoreLine*)malloc((size_t)n * sizeof(ScoreLine));
-    if (!t) return;
-
-    for (int i = 0; i < n; i++) {
-        t[i].nom = noms[i];
-        t[i].score = scores[i];
-    }
-
-    qsort(t, (size_t)n, sizeof(ScoreLine), cmp_scoreline);
-
-    for (int i = 0; i < n; i++) {
-        printf("%s %d\n", t[i].nom, t[i].score);
-    }
-
-    free(t);
-}
-
-/* =========================
-   Ligne d'ordres autorisés
-   ========================= */
-   /* Doit afficher la ligne en se limitant aux ordres autorisés :*/
-static void print_ligne_ordres(const Lecture* lec) {
-    int first = 1;
-
-    /* ordre d'affichage demandé dans le sujet */
-    if (lec->allow_KI) {
-        if (!first) printf(" | ");
-        printf("KI (B -> R)");
-        first = 0;
-    }
-    if (lec->allow_LO) {
-        if (!first) printf(" | ");
-        printf("LO (B <- R)");
-        first = 0;
-    }
-    if (lec->allow_SO) {
-        if (!first) printf(" | ");
-        printf("SO (B <-> R)");
-        first = 0;
-    }
-    if (lec->allow_NI) {
-        if (!first) printf(" | ");
-        printf("NI (B ^)");
-        first = 0;
-    }
-    if (lec->allow_MA) {
-        if (!first) printf(" | ");
-        printf("MA (R ^)");
-        first = 0;
-    }
-
-    printf("\n");
-}
-
-/* =========================
-   Génération des "cartes position"
-   (toutes les positions possibles)
-   ========================= */
-
-   /* Une carte = contenu bleu + contenu rouge (bas->haut), avec des ids d'animaux [0..n-1] */
-typedef struct {
-    int* bleu;
-    int nb_bleu;
-    int* rouge;
-    int nb_rouge;
-} Card;
-
-static void card_free(Card* c) {
-    free(c->bleu);
-    free(c->rouge);
-    c->bleu = NULL; c->rouge = NULL;
-    c->nb_bleu = 0; c->nb_rouge = 0;
-}
-
-/* Factorielle (petit n) */
-static int fact(int n) {
-    int r = 1;
-    for (int i = 2; i <= n; i++) r *= i;
-    return r;
-}
-
-/* Construit toutes les cartes:
-   pour chaque permutation perm[0..n-1], pour chaque split k:
-     bleu = perm[0..k-1], rouge = perm[k..n-1]
-   => (n+1)*n! cartes (24 si n=3) :contentReference[oaicite:10]{index=10}
-*/
-static void gen_cards_rec(int n, int depth, int* perm, int* used,
-    Card* out, int* out_count) {
-    if (depth == n) {
-        for (int k = 0; k <= n; k++) {
-            Card* c = &out[*out_count];
-
-            c->nb_bleu = k;
-            c->nb_rouge = n - k;
-
-            c->bleu = (k > 0) ? (int*)malloc((size_t)k * sizeof(int)) : NULL;
-            c->rouge = (n - k > 0) ? (int*)malloc((size_t)(n - k) * sizeof(int)) : NULL;
-
-            if ((k > 0 && !c->bleu) || (n - k > 0 && !c->rouge)) {
-                /* si manque mémoire: on met une carte vide (et on continue) */
-                free(c->bleu); free(c->rouge);
-                c->bleu = NULL; c->rouge = NULL;
-                c->nb_bleu = 0; c->nb_rouge = 0;
-            }
-            else {
-                for (int i = 0; i < k; i++) c->bleu[i] = perm[i];
-                for (int i = 0; i < n - k; i++) c->rouge[i] = perm[k + i];
-            }
-
-            (*out_count)++;
-        }
-        return;
-    }
-
-    for (int x = 0; x < n; x++) {
-        if (!used[x]) {
-            used[x] = 1;
-            perm[depth] = x;
-            gen_cards_rec(n, depth + 1, perm, used, out, out_count);
-            used[x] = 0;
-        }
-    }
-}
-
-static Card* build_all_cards(int n_animaux, int* out_nb_cards) {
-    int nb = (n_animaux + 1) * fact(n_animaux);
-    Card* cards = (Card*)calloc((size_t)nb, sizeof(Card));
-    if (!cards) return NULL;
-
-    int* perm = (int*)malloc((size_t)n_animaux * sizeof(int));
-    int* used = (int*)calloc((size_t)n_animaux, sizeof(int));
-    if (!perm || !used) {
-        free(perm); free(used);
-        free(cards);
-        return NULL;
-    }
-
-    int count = 0;
-    gen_cards_rec(n_animaux, 0, perm, used, cards, &count);
-
-    free(perm);
-    free(used);
-
-    *out_nb_cards = count; /* normalement nb */
-    return cards;
-}
-
-/* Mélange Fisher-Yates */
-static void shuffle_cards(Card* cards, int n) {
-    for (int i = n - 1; i > 0; i--) {
-        int j = rand() % (i + 1);
-        Card tmp = cards[i];
-        cards[i] = cards[j];
-        cards[j] = tmp;
-    }
-}
-
-/* Convertit une Card vers un Jeu (podiums remplis bas->haut) */
-static int jeu_from_card(Jeu* j, const Lecture* lec, const Card* c) {
-    /* initPodium(cap = n_animaux) */
-    if (!initPodium(&j->bleu, lec->n_animaux)) return 0;
-    if (!initPodium(&j->rouge, lec->n_animaux)) {
-        podium_free(&j->bleu);
-        return 0;
-    }
-
-    for (int i = 0; i < c->nb_bleu; i++) {
-        if (!podium_push(&j->bleu, c->bleu[i])) return 0;
-    }
-    for (int i = 0; i < c->nb_rouge; i++) {
-        if (!podium_push(&j->rouge, c->rouge[i])) return 0;
-    }
-    return 1;
-}
-
-/* =========================
-   Affichage "situation" (strict)
-   - gauche = départ
-   - droite = objectif
-   - la ligne des dashes contient " ==> "
-   ========================= */
-
-   /* Largeur colonne = max(len noms, 5 (ROUGE), 4 (----)) */
-static int max_int(int a, int b) { return (a > b) ? a : b; }
-
-static int max_name_len(const Lecture* lec) {
-    int m = 0;
-    for (int i = 0; i < lec->n_animaux; i++) {
-        int l = (int)strlen(lec->animaux[i]);
-        if (l > m) m = l;
-    }
-    return m;
-}
-
-static void print_spaces(int n) {
-    for (int i = 0; i < n; i++) putchar(' ');
-}
-
-static void print_center(const char* s, int width) {
-    int len = (int)strlen(s);
-    int left = (width - len) / 2;
-    int right = width - len - left;
-    print_spaces(left);
-    fputs(s, stdout);
-    print_spaces(right);
-}
-
-static const char* name_from_id(const Lecture* lec, int id) {
-    if (id < 0 || id >= lec->n_animaux) return "";
-    return lec->animaux[id];
-}
-
-/* Affiche 2 jeux côte à côte selon le format de l’énoncé : */
-static void print_situation(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
-    int w = max_name_len(lec);
-    w = max_int(w, 5);
-    w = max_int(w, 4);
-
-    int hb1 = depart->bleu.nbElements;
-    int hr1 = depart->rouge.nbElements;
-    int h1 = max_int(hb1, hr1);
-
-    int hb2 = objectif->bleu.nbElements;
-    int hr2 = objectif->rouge.nbElements;
-    int h2 = max_int(hb2, hr2);
-
-    int h = max_int(h1, h2);
-
-    /* lignes animaux: pas de "==>" ici, juste les 4 colonnes */
-    for (int row = h - 1; row >= 0; row--) {
-        /* depart BLEU */
-        if (row < hb1) print_center(name_from_id(lec, depart->bleu.elements[row]), w);
-        else print_spaces(w);
-
-        print_spaces(1);
-
-        /* depart ROUGE */
-        if (row < hr1) print_center(name_from_id(lec, depart->rouge.elements[row]), w);
-        else print_spaces(w);
-
-        print_spaces(1);
-
-        /* objectif BLEU */
-        if (row < hb2) print_center(name_from_id(lec, objectif->bleu.elements[row]), w);
-        else print_spaces(w);
-
-        print_spaces(1);
-
-        /* objectif ROUGE */
-        if (row < hr2) print_center(name_from_id(lec, objectif->rouge.elements[row]), w);
-        else print_spaces(w);
-
-        putchar('\n');
-    }
-
-    /* ligne dashes avec ==> au milieu */
-    print_center("----", w);
-    print_spaces(1);
-    print_center("----", w);
-
-    printf(" ==> ");
-
-    print_center("----", w);
-    print_spaces(1);
-    print_center("----", w);
-    putchar('\n');
-
-    /* labels */
-    print_center("BLEU", w);
-    print_spaces(1);
-    print_center("ROUGE", w);
-
-    print_spaces(1);
-
-    print_center("BLEU", w);
-    print_spaces(1);
-    print_center("ROUGE", w);
-    putchar('\n');
-}
-
-/* =========================
-   MAIN
-   ========================= */
+int joueurs_distincts(int n, const char* noms[]);
+int index_joueur(int n, const char* noms[], const char* id);
+int cmp_scoreline(const void* a, const void* b);
+void print_scores_fin(int n, const char* noms[], const int scores[]);
+void print_ordres(const Lecture* lec);
+int jeu_from_card(Jeu* j, const Lecture* lec, const Card* c);
+void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec);
 
 int main(int argc, const char* argv[]) {
     /* 1) Joueurs : au moins 2, distincts sinon on quitte : */
@@ -354,13 +53,14 @@ int main(int argc, const char* argv[]) {
     }
 
     /* 3) Afficher la ligne des ordres autorisés : */
-    print_ligne_ordres(&lec);
+    print_ordres(&lec);
 
     /* 4) Générer toutes les cartes positions, mélanger, et en consommer sans remise : */
     srand((unsigned)time(NULL));
 
     int nb_cards = 0;
     Card* deck = build_all_cards(lec.n_animaux, &nb_cards);
+
     if (!deck || nb_cards < 2) {
         printf("Erreur: impossible de generer les positions.\n");
         lecture_free(&lec);
@@ -369,8 +69,9 @@ int main(int argc, const char* argv[]) {
     shuffle_cards(deck, nb_cards);
 
     /* 5) Score + état du tour */
-    int* scores = (int*)calloc((size_t)n_joueurs, sizeof(int));
-    int* can_play = (int*)malloc((size_t)n_joueurs * sizeof(int));
+    int* scores = (int*)malloc(n_joueurs * sizeof(int));
+    int* can_play = (int*)malloc(n_joueurs * sizeof(int));
+
     if (!scores || !can_play) {
         printf("Erreur memoire.\n");
         free(scores); free(can_play);
@@ -395,7 +96,7 @@ int main(int argc, const char* argv[]) {
     }
 
     /* afficher situation initiale : */
-    print_situation(&depart, &objectif, &lec);
+    affichage(&depart, &objectif, &lec);
 
     /* 7) Boucle de jeu: tant qu’il reste des cartes objectif */
     char line[2048];
@@ -463,7 +164,7 @@ int main(int argc, const char* argv[]) {
                     goto fin_partie;
                 }
 
-                print_situation(&depart, &objectif, &lec);
+                affichage(&depart, &objectif, &lec);
                 break; /* fin de tour */
             }
             else {
@@ -491,7 +192,7 @@ int main(int argc, const char* argv[]) {
                         goto fin_partie;
                     }
 
-                    print_situation(&depart, &objectif, &lec);
+                    affichage(&depart, &objectif, &lec);
                     break; /* fin de tour */
                 }
             }
@@ -518,4 +219,200 @@ fin:
     free(scores);
     free(can_play);
     return 0;
+}
+
+int joueurs_distincts(int n, const char* noms[]) {
+    for (int i = 0; i < n; i++) {
+        for (int k = i + 1; k < n; k++) {
+            if (strcmp(noms[i], noms[k]) == 0) return 0;
+        }
+    }
+    return 1;
+}
+
+int index_joueur(int n, const char* noms[], const char* id) {
+    for (int i = 0; i < n; i++) {
+        if (strcmp(noms[i], id) == 0) return i;
+    }
+    return -1;
+}
+
+int cmp_scoreline(const void* a, const void* b) {
+    const ScoreLine* A = (const ScoreLine*)a;
+    const ScoreLine* B = (const ScoreLine*)b;
+
+    if (A->score != B->score) return (B->score - A->score); /* décroissant */
+    return strcmp(A->nom, B->nom);                           /* alphabétique */
+}
+
+void print_scores_fin(int n, const char* noms[], const int scores[]) {
+    ScoreLine* t = (ScoreLine*)malloc((size_t)n * sizeof(ScoreLine));
+    if (!t) return;
+
+    for (int i = 0; i < n; i++) {
+        t[i].nom = noms[i];
+        t[i].score = scores[i];
+    }
+
+    qsort(t, (size_t)n, sizeof(ScoreLine), cmp_scoreline);
+
+    for (int i = 0; i < n; i++) {
+        printf("%s %d\n", t[i].nom, t[i].score);
+    }
+
+    free(t);
+}
+
+   /* Doit afficher la ligne en se limitant aux ordres autorisés :*/
+void print_ordres(const Lecture* lec) {
+    int first = 1;
+
+    /* ordre d'affichage demandé dans le sujet */
+    if (lec->allow_KI) {
+        if (!first) printf(" | ");
+        printf("KI (B -> R)");
+        first = 0;
+    }
+    if (lec->allow_LO) {
+        if (!first) printf(" | ");
+        printf("LO (B <- R)");
+        first = 0;
+    }
+    if (lec->allow_SO) {
+        if (!first) printf(" | ");
+        printf("SO (B <-> R)");
+        first = 0;
+    }
+    if (lec->allow_NI) {
+        if (!first) printf(" | ");
+        printf("NI (B ^)");
+        first = 0;
+    }
+    if (lec->allow_MA) {
+        if (!first) printf(" | ");
+        printf("MA (R ^)");
+        first = 0;
+    }
+
+    printf("\n");
+}
+
+/* Convertit une Card vers un Jeu (podiums remplis bas->haut) */
+int jeu_from_card(Jeu* j, const Lecture* lec, const Card* c) {
+    /* initPodium(cap = n_animaux) */
+    if (!initPodium(&j->bleu, lec->n_animaux)) return 0;
+    if (!initPodium(&j->rouge, lec->n_animaux)) {
+        podium_free(&j->bleu);
+        return 0;
+    }
+
+    for (int i = 0; i < c->nb_bleu; i++) {
+        if (!podium_push(&j->bleu, c->bleu[i])) return 0;
+    }
+    for (int i = 0; i < c->nb_rouge; i++) {
+        if (!podium_push(&j->rouge, c->rouge[i])) return 0;
+    }
+    return 1;
+}
+
+/* =========================
+   Affichage "situation" (strict)
+   - gauche = départ
+   - droite = objectif
+   - la ligne des dashes contient " ==> "
+   ========================= */
+
+int max_name_len(const Lecture* lec) {
+    int m = 0;
+    for (int i = 0; i < lec->n_animaux; i++) {
+        m = (m > (int)strlen(lec->animaux[i])) ? m : (int)strlen(lec->animaux[i]);
+    }
+    return m;
+}
+
+void print_spaces(int n) {
+    for (int i = 0; i < n; i++) putchar(' ');
+}
+
+void print_center(const char* s, int width) {
+    int len = (int)strlen(s);
+    int right = width - len;
+    fputs(s, stdout);
+    print_spaces(right);
+}
+
+/* Affiche 2 jeux côte à côte selon le format de l’énoncé : */
+void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
+    int wr = max_name_len(lec),wb = max_name_len(lec);
+    wr = (wr > 5) ? wr : 5;
+    wb = (wb > 4) ? wb : 4;
+
+    int hb1 = depart->bleu.nbElements;
+    int hr1 = depart->rouge.nbElements;
+    int h1 = (hb1 > hr1) ? hb1 : hr1;
+
+    int hb2 = objectif->bleu.nbElements;
+    int hr2 = objectif->rouge.nbElements;
+    int h2 = (hb2 > hr2) ? hb2 :hr2;
+
+    int h = (h1 > h2) ? h1 : h2;
+
+    /* lignes animaux: pas de "==>" ici, juste les 4 colonnes */
+    for (int row = h - 1; row >= 0; row--) {
+        /* depart BLEU */
+        if (row < hb1) 
+            print_center(name_from_id(lec, depart->bleu.elements[row]), wb);
+        else 
+            print_spaces(wb);
+
+        print_spaces(2);
+
+        /* depart ROUGE */
+        if (row < hr1) 
+            print_center(name_from_id(lec, depart->rouge.elements[row]), wr);
+        else 
+            print_spaces(wr);
+
+        print_spaces(2);
+
+        /* objectif BLEU */
+        if (row < hb2) 
+            print_center(name_from_id(lec, objectif->bleu.elements[row]), wb);
+        else 
+            print_spaces(wb);
+
+        print_spaces(2);
+
+        /* objectif ROUGE */
+        if (row < hr2) 
+            print_center(name_from_id(lec, objectif->rouge.elements[row]), wr);
+        else 
+            print_spaces(wr);
+
+        putchar('\n');
+    }
+
+    /* ligne dashes avec ==> au milieu */
+    print_center("----", wb);
+    print_spaces(2);
+    print_center("----", wb);
+
+    printf("  ==>  ");
+
+    print_center("----", wb);
+    print_spaces(2);
+    print_center("----", wb);
+    putchar('\n');
+
+    /* labels */
+    print_center("BLEU", wb);
+    print_spaces(2);
+    print_center("ROUGE", wb);
+
+    print_spaces(2);
+
+    print_center("BLEU", wb);
+    print_spaces(2);
+    print_center("ROUGE", wb);
+    putchar('\n');
 }

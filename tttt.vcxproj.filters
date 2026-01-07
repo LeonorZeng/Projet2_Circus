@@ -30,6 +30,9 @@
     <ClInclude Include="itemvecteur.h">
       <Filter>Fichiers de ressources</Filter>
     </ClInclude>
+    <ClInclude Include="card.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="podium.c">
@@ -46,6 +49,9 @@
     </ClCompile>
     <ClCompile Include="vecteur.c">
       <Filter>Fichiers de ressources</Filter>
+    </ClCompile>
+    <ClCompile Include="card.c">
+      <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
