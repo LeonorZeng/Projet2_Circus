@@ -99,8 +99,8 @@ Card* build_all_cards(int n_animaux, int* out_nb_cards) {
 
     free(perm);
 
-    *out_nb_cards = count; /* normalement nb */
-    printf("Nombre de cartes generees: %d\n", count);
+    *out_nb_cards = count;
+    printf("Nombre de cartes generees: %d\n\n", count);
     return cards;
 }
 

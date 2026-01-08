@@ -162,6 +162,7 @@ int main(int argc, const char* argv[]) {
                 if (!jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
                     /* plus de carte => fin */
                     goto fin_partie;
+                    return;
                 }
 
                 affichage(&depart, &objectif, &lec);
@@ -202,13 +203,14 @@ int main(int argc, const char* argv[]) {
         if (feof(stdin)) break;
     }
 
-fin_partie:
+void fin_partie(n_joueurs, joueurs, scores,){
     /* 8) Fin: afficher scores triés (strict) : */
     print_scores_fin(n_joueurs, joueurs, scores);
 
     /* lib jeux */
     jeu_free(&depart);
     jeu_free(&objectif);
+}
 
 fin:
     /* lib deck */
