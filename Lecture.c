@@ -221,6 +221,6 @@ void lecture_free(Lecture* lec) {
 
 const char* name_from_id(const Lecture* lec, int id) {
     if (id < 0 || id >= lec->n_animaux) 
-        return "Veuillez changez de id. Celui-ci n'est pas valide.";
+        return "Cet id n'est pas valide.";
     return lec->animaux[id];
 }

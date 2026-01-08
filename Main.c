@@ -212,7 +212,7 @@ int main(int argc, const char* argv[]) {
 
         /* EOF -> fin */
         if (feof(stdin)) break;
-    }
+    } 
 }
 
 void fin_partie(int n_joueurs, const char* joueurs, int* scores, Jeu* depart, Jeu* objectif) {
@@ -307,7 +307,7 @@ void print_ordres(const Lecture* lec) {
         first = 0;
     }
 
-    printf("\n");
+    printf("\n\n");
 }
 
 /* Convertit une Card vers un Jeu (podiums remplis bas->haut) */
@@ -344,88 +344,104 @@ int max_name_len(const Lecture* lec) {
 }
 
 void print_spaces(int n) {
-    for (int i = 0; i < n; i++) putchar(' ');
+    for (int i = 0; i < n; i++) 
+        putchar(' ');
 }
 
-void print_center(const char* s, int width) {
+void print_left(const char* s, int width) {
     int len = (int)strlen(s);
     int right = width - len;
     fputs(s, stdout);
     print_spaces(right);
 }
 
+void largeur(int* wb, int* wr, const Jeu* jeu, const Lecture* lec) {
+    *wb = 4;
+    *wr = 5;
+    for (int i = 0; i < jeu->bleu.nbElements; ++i)
+        *wb = (*wb > strlen(name_from_id(lec, jeu->bleu.elements[i]))) ? *wb : strlen(name_from_id(lec, jeu->bleu.elements[i]));
+
+    for (int i = 0; i < jeu->rouge.nbElements; ++i)
+        *wr = (*wr > strlen(name_from_id(lec, jeu->rouge.elements[i]))) ? *wr : strlen(name_from_id(lec, jeu->rouge.elements[i]));
+
+}
+
 /* Affiche 2 jeux côte à côte selon le format de l’énoncé : */
 void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
-    int wr = max_name_len(lec),wb = max_name_len(lec);
-    wr = (wr > 5) ? wr : 5;
-    wb = (wb > 4) ? wb : 4;
+    if (!depart || !objectif || !lec) 
+        return;
 
-    int hb1 = depart->bleu.nbElements;
-    int hr1 = depart->rouge.nbElements;
-    int h1 = (hb1 > hr1) ? hb1 : hr1;
+	int wbD, wrD, wbO, wrO; ///< ce sont les largueurs des podiums pour depart (D) et objectif (O)
+    largeur(&wbD, &wrD, depart, lec);
+    largeur(&wbO, &wrO, objectif, lec);
 
-    int hb2 = objectif->bleu.nbElements;
-    int hr2 = objectif->rouge.nbElements;
-    int h2 = (hb2 > hr2) ? hb2 :hr2;
+    int h1 = depart->bleu.nbElements > depart->rouge.nbElements ? depart->bleu.nbElements : depart->rouge.nbElements;
 
-    int h = (h1 > h2) ? h1 : h2;
+    int h2 = objectif->bleu.nbElements > objectif->rouge.nbElements ? objectif->bleu.nbElements : objectif->rouge.nbElements;
 
-    /* lignes animaux: pas de "==>" ici, juste les 4 colonnes */
+    int h = h1 > h2 ? h1 : h2;
+
+    /* lignes animaux */
     for (int row = h - 1; row >= 0; row--) {
+
         /* depart BLEU */
-        if (row < hb1) 
-            print_center(name_from_id(lec, depart->bleu.elements[row]), wb);
-        else 
-            print_spaces(wb);
+        if (row < depart->bleu.nbElements)
+            print_left(name_from_id(lec, depart->bleu.elements[row]), wbD);
+        else
+            print_spaces(wbD);
 
         print_spaces(2);
 
         /* depart ROUGE */
-        if (row < hr1) 
-            print_center(name_from_id(lec, depart->rouge.elements[row]), wr);
-        else 
-            print_spaces(wr);
+        if (row < depart->rouge.nbElements)
+            print_left(name_from_id(lec, depart->rouge.elements[row]), wrD);
+        else
+            print_spaces(wrD);
 
-        print_spaces(2);
+		// espace entre départ et objectif est fixe à 7 espaces
+        print_spaces(7);
 
+        
         /* objectif BLEU */
-        if (row < hb2) 
-            print_center(name_from_id(lec, objectif->bleu.elements[row]), wb);
-        else 
-            print_spaces(wb);
+        if (row < objectif->bleu.nbElements)
+            print_left(name_from_id(lec, objectif->bleu.elements[row]), wbO);
+        else
+            print_spaces(wbO);
 
         print_spaces(2);
 
         /* objectif ROUGE */
-        if (row < hr2) 
-            print_center(name_from_id(lec, objectif->rouge.elements[row]), wr);
-        else 
-            print_spaces(wr);
+        if (row < objectif->rouge.nbElements)
+            print_left(name_from_id(lec, objectif->rouge.elements[row]), wrO);
+        else
+            print_spaces(wrO);
 
         putchar('\n');
     }
 
+    
     /* ligne dashes avec ==> au milieu */
-    print_center("----", wb);
+    print_left("----", wbD);
     print_spaces(2);
-    print_center("----", wb);
+    print_left("----", wrD);
 
     printf("  ==>  ");
 
-    print_center("----", wb);
+    print_left("----", wbO);
     print_spaces(2);
-    print_center("----", wb);
+    print_left("----", wrO);
     putchar('\n');
 
     /* labels */
-    print_center("BLEU", wb);
+    print_left("BLEU", wbD);
     print_spaces(2);
-    print_center("ROUGE", wb);
+    print_left("ROUGE", wrD);
 
-    print_spaces(2);
+    // espace entre départ et objectif est fixe à 7 espaces
+    print_spaces(7);
 
-    print_center("BLEU", wb);
+    print_left("BLEU", wbO);
     print_spaces(2);
-    print_center("ROUGE", wb);
+    print_left("ROUGE", wrO);
     putchar('\n');
 }

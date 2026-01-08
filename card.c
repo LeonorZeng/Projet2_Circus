@@ -198,6 +198,5 @@ void heap_iteratif(int n, int* A, Card* out, int* out_count) {
         }
     }
 	free(compteur);
-    afficher_permutation(*out_count, out);
 
 }
