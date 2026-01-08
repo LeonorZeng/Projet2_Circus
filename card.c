@@ -15,6 +15,7 @@
    /* Une carte = contenu bleu + contenu rouge (bas->haut), avec des ids d'animaux [0..n-1] */
 
 void initCard(Card* c) {
+    if (!c) return;
     c->bleu = NULL;
     c->nb_bleu = 0;
     c->rouge = NULL;
@@ -22,8 +23,13 @@ void initCard(Card* c) {
 }
 
 void card_free(Card* c) {
+    if (!c) return;
     free(c->bleu);
+    c->bleu = NULL;
+    c->nb_bleu = 0;
     free(c->rouge);
+    c->rouge = NULL;
+    c->nb_rouge = 0;
 }
 
 /**
@@ -32,7 +38,7 @@ void card_free(Card* c) {
  * @return le factorielle de n.
  */
 int fact(int n) {
-    for (int i = n - 1; 0 < i; --i)
+    for (int i = n - 1; i >= 1 ; --i)
         n *= i;
     return n;
 }
@@ -84,15 +90,18 @@ void gen_cards_rec(int n, int depth, int* perm, int* used, Card* out, int* out_c
 Card* build_all_cards(int n_animaux, int* out_nb_cards) {
     int nb = fact(n_animaux + 1);
     Card* cards = (Card*)malloc(sizeof(Card) * nb);
-    if (!cards) return NULL;
+    if (!cards) 
+        return NULL;
 
     int* perm = (int*)malloc(n_animaux * sizeof(int));
     if (!perm) {
-        free(perm);
         free(cards);
         printf("Erreur memoire. Nous ne pouvons pas g¨¦n¨¦rer de carte\n");
         return NULL;
     }
+    
+    for (int i = 0; i < n_animaux; ++i)
+        perm[i] = i;
 
     int count = 0;
     heap_iteratif(n_animaux, perm, cards, &count);
@@ -118,8 +127,10 @@ void afficher_permutation(int n, Card* A) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < A[i].nb_bleu; j++) {
             printf("%d ", A[i].bleu[j]);
-            printf("| ");
         }
+
+        printf("| ");
+
         for (int r = 0; r < A[i].nb_rouge; r++){
             printf("%d ", A[i].rouge[r]);
         }
@@ -127,66 +138,66 @@ void afficher_permutation(int n, Card* A) {
     }
 }
 
-void enregistrement(int n, int* A, Card* out, int* out_count) {
-    Card* c = (Card*)malloc(sizeof(Card));
-    initCard(c);
-    for (int j = 0; j < n + 1; j++) {
-        for (int i = 0; i < n; i++) {
-            if (i <= j) {
-                c->bleu[i] = A[i];
-                ++c->nb_bleu;
-            }
+void enregistrement(int n, const int* perm, Card* out, int* out_count) {
+    for (int j = 0; j <= n; ++j) {
+        Card* c = &out[*out_count];
+        c->nb_bleu = j;
+        c->nb_rouge = n - j;
 
-            else {
-                c->rouge[i] = A[i];
-                ++c->nb_rouge;
-            }
+        c->bleu = (j > 0) ? (int*)malloc((size_t)j * sizeof(int)) : NULL;
+        c->rouge = (n - j > 0) ? (int*)malloc((size_t)(n - j) * sizeof(int)) : NULL;
+
+        if ((j > 0 && !c->bleu) || (n - j > 0 && !c->rouge)) {
+            free(c->bleu);
+            free(c->rouge);
+            c->bleu = NULL;
+            c->rouge = NULL;
+            c->nb_bleu = 0;
+            c->nb_rouge = 0;
+            (*out_count)++;
+            continue;
         }
-        out[j] = *c;
+
+        for (int i = 0; i < j; ++i) 
+            c->bleu[i] = perm[i];
+        for (int i = 0; i < n - j; ++i) 
+            c->rouge[i] = perm[j + i];
+
         (*out_count)++;
     }
 }
 
 void heap_iteratif(int n, int* A, Card* out, int* out_count) {
-    int compteur[] = { 0,0,0,0 };
+    int* compteur = (int*)calloc(n, sizeof(int));
+    if (!compteur) {
+        printf("Erreur memoire. Nous ne pouvons pas generer les cartes.\n");
+        return;
+	}
 
-    for (int i = 0; i < n; i++)
-        compteur[i] = A[i];
     enregistrement(n, A, out, out_count);
 
-    // i indique le niveau de la boucle en cours d'incr¨¦mentation
     int i = 0;
 
     while (i < n) {
-        int tmp;
         if (compteur[i] < i) {
+			int swap = (i % 2 == 0) ? 0 : compteur[i];
+            int tmp = A[swap];
+            A[swap] = A[i];
+            A[i] = tmp;
 
-            if (i % 2 == 0) {
-                tmp = A[0];
-                A[0] = A[i];
-                A[i] = tmp;
-                enregistrement(n, A, out, out_count);
-            }
-
-            else {
-                tmp = A[compteur[i]];
-                A[compteur[i]] = A[i];
-                A[i] = tmp;
-                enregistrement(n, A, out, out_count);
-            }
-
-            for (int i = 0; i < n; i++)
-                compteur[i] = A[i];
+            enregistrement(n, A, out, out_count);
 
             ++compteur[i]; // on incr¨¦mente l'indice de boucle apr¨¨s avoir effectu¨¦ une it¨¦ration
             i = 0;// on retourne au cas de base de la version r¨¦cursive
         }
+
         else {
             // la boucle de niveau i est termin¨¦e, on peut donc r¨¦initialiser l'indice et retourner au niveau sup¨¦rieur
             compteur[i] = 0;
             ++i;
         }
     }
+	free(compteur);
     afficher_permutation(*out_count, out);
 
 }

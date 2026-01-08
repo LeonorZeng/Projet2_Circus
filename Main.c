@@ -23,6 +23,8 @@ void print_scores_fin(int n, const char* noms[], const int scores[]);
 void print_ordres(const Lecture* lec);
 int jeu_from_card(Jeu* j, const Lecture* lec, const Card* c);
 void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec);
+void fin_partie(int n_joueurs, const char* joueurs, int* scores, Jeu* depart, Jeu* objectif);
+void fin(int nb_cards, Card* deck, Lecture* lec, int* scores, int* can_play);
 
 int main(int argc, const char* argv[]) {
     /* 1) Joueurs : au moins 2, distincts sinon on quitte : */
@@ -87,12 +89,14 @@ int main(int argc, const char* argv[]) {
     Jeu depart, objectif;
     if (!jeu_from_card(&depart, &lec, &deck[deck_i++])) {
         printf("Erreur init depart.\n");
-        goto fin;
+        fin( nb_cards, deck, &lec, scores,can_play);
+		return;
     }
     if (!jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
         printf("Erreur init objectif.\n");
         jeu_free(&depart);
-        goto fin;
+        fin( nb_cards, deck, &lec, scores,can_play);
+        return;
     }
 
     /* afficher situation initiale : */
@@ -101,11 +105,15 @@ int main(int argc, const char* argv[]) {
     /* 7) Boucle de jeu: tant qu’il reste des cartes objectif */
     char line[2048];
     while (1) {
+
         /* nouveau tour: tout le monde peut jouer */
-        for (int i = 0; i < n_joueurs; i++) can_play[i] = 1;
+        for (int i = 0; i < n_joueurs; i++) 
+            can_play[i] = 1;
 
         /* si plus de carte objectif => fin */
-        if (deck_i > nb_cards) break; /* sécurité */
+        if (deck_i > nb_cards) 
+            break; /* sécurité */
+
         if (deck_i == nb_cards) {
             /* plus de nouvelle carte objectif disponible => partie terminée :*/
             break;
@@ -161,7 +169,7 @@ int main(int argc, const char* argv[]) {
                 jeu_free(&objectif);
                 if (!jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
                     /* plus de carte => fin */
-                    goto fin_partie;
+                    void fin_partie(n_joueurs, joueurs, scores, depart, objectif);
                     return;
                 }
 
@@ -177,7 +185,9 @@ int main(int argc, const char* argv[]) {
                 int last = -1;
                 int nb_ok = 0;
                 for (int i = 0; i < n_joueurs; i++) {
-                    if (can_play[i]) { nb_ok++; last = i; }
+                    if (can_play[i]) { 
+                        nb_ok++; last = i; 
+                    }
                 }
                 if (nb_ok == 1) {
                     scores[last] += 1;
@@ -190,7 +200,8 @@ int main(int argc, const char* argv[]) {
                     /* nouvelle carte objectif */
                     jeu_free(&objectif);
                     if (!jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
-                        goto fin_partie;
+                        void fin_partie(n_joueurs, joueurs, scores, depart, objectif);
+						return;
                     }
 
                     affichage(&depart, &objectif, &lec);
@@ -202,25 +213,25 @@ int main(int argc, const char* argv[]) {
         /* EOF -> fin */
         if (feof(stdin)) break;
     }
+}
 
-void fin_partie(n_joueurs, joueurs, scores,){
+void fin_partie(int n_joueurs, const char* joueurs, int* scores, Jeu* depart, Jeu* objectif) {
     /* 8) Fin: afficher scores triés (strict) : */
     print_scores_fin(n_joueurs, joueurs, scores);
 
-    /* lib jeux */
-    jeu_free(&depart);
-    jeu_free(&objectif);
+    /* libere le jeux */
+    jeu_free(depart);
+    jeu_free(objectif);
 }
 
-fin:
-    /* lib deck */
+void fin(int nb_cards, Card *deck, Lecture * lec, int * scores, int * can_play) {
+    /* libere le deck */
     for (int i = 0; i < nb_cards; i++) card_free(&deck[i]);
     free(deck);
 
-    lecture_free(&lec);
+    lecture_free(lec);
     free(scores);
     free(can_play);
-    return 0;
 }
 
 int joueurs_distincts(int n, const char* noms[]) {
