@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 
-enum{ ESP_PODIUM = 2};
+enum{ ESP_PODIUM = 2 , ESP_JEU=7};
 /* ===================== INIT / FREE ===================== */
 
 int jeu_init(Jeu* j, const Lecture* lec) {
@@ -23,7 +23,6 @@ void jeu_free(Jeu* j) {
     podium_free(&j->rouge);
 }
 
-/* Convertit une Card vers un Jeu (podiums remplis bas->haut) */
 int jeu_from_card(Jeu* j, const Lecture* lec, const Card* c) {
     /* initPodium(cap = n_animaux) */
     if (!initPodium(&j->bleu, lec->n_animaux)) return 0;
@@ -156,7 +155,7 @@ void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
         else
             print_spaces(wbD);
 
-        print_spaces(2);
+        print_spaces(ESP_PODIUM);
 
         /* depart ROUGE */
         if (row < depart->rouge.nbElements)
@@ -165,7 +164,7 @@ void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
             print_spaces(wrD);
 
         // espace entre départ et objectif est fixe à 7 espaces
-        print_spaces(7);
+        print_spaces(ESP_JEU);
 
 
         /* objectif BLEU */
@@ -182,7 +181,7 @@ void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
         else
             print_spaces(wrO);
 
-        putchar('\n');
+        putchar('\n\n');
     }
 
 
@@ -201,7 +200,7 @@ void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
     print_left("ROUGE", wrD);
 
     // espace entre départ et objectif est fixe à 7 espaces
-    print_spaces(7);
+    print_spaces(ESP_JEU);
 
     print_left("BLEU", wbO + ESP_PODIUM);
     print_left("ROUGE", wrO);

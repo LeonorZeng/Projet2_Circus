@@ -13,7 +13,6 @@ void podium_free(Podium* p) {
 }
 
 int podium_push(Podium* p, int animal) {
-	printf("Podium push %d\n", animal);
     return ajouter(p, animal);
 }
 

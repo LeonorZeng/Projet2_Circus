@@ -22,37 +22,34 @@ void fin_partie(int n_joueurs, const char* joueurs, int* scores, Jeu* depart, Je
 void fin(int nb_cards, Card* deck, Lecture* lec, int* scores, int* can_play);
 
 int main(int argc, const char* argv[]) {
-    /* 1) Joueurs : au moins 2, distincts sinon on quitte : */
+
     if (argc < 3) {
         printf("Erreur: au moins 2 joueurs en parametres.\n");
-        return 0;
+        return 1;
     }
+
     int n_joueurs = argc - 1;
-    const char** joueurs = argv + 1;
+    const char** joueurs = (const char**)argv + 1;
 
     if (!joueurs_distincts(n_joueurs, joueurs)) {
         printf("Erreur: joueurs non distincts.\n");
-        return 0;
+        return 1;
     }
 
-    /* 2) Lire crazy.cfg (2 lignes) : */
     Lecture lec;
     if (!lecture_load(&lec, ".\\crazy.cfg")) {
-        return 0;
+        return 1;
     }
 
-    /* vérif: animaux >= 2, ordres >= 3 (sinon stop immédiat) :*/
     int nb_ordres = lec.allow_KI + lec.allow_LO + lec.allow_SO + lec.allow_NI + lec.allow_MA;
     if (lec.n_animaux < 2 || nb_ordres < 3) {
         printf("Erreur: configuration invalide (animaux>=2, ordres>=3).\n");
         lecture_free(&lec);
-        return 0;
+        return 1;
     }
 
-    /* 3) Afficher la ligne des ordres autorisés : */
     print_ordres(&lec);
 
-    /* 4) Générer toutes les cartes positions, mélanger, et en consommer sans remise : */
     srand((unsigned)time(NULL));
 
     int nb_cards = 0;
@@ -61,150 +58,136 @@ int main(int argc, const char* argv[]) {
     if (!deck || nb_cards < 2) {
         printf("Erreur: impossible de generer les positions.\n");
         lecture_free(&lec);
-        return 0;
+        return 1;
     }
     shuffle_cards(deck, nb_cards);
 
-    /* 5) Score + état du tour */
-    int* scores = (int*)malloc(n_joueurs * sizeof(int));
-    int* can_play = (int*)malloc(n_joueurs * sizeof(int));
+    /* ✅ scores à 0 */
+    int* scores = (int*)calloc((size_t)n_joueurs, sizeof(int));
+    int* can_play = (int*)malloc((size_t)n_joueurs * sizeof(int));
 
     if (!scores || !can_play) {
         printf("Erreur memoire.\n");
-        free(scores); free(can_play);
-        for (int i = 0; i < nb_cards; i++) card_free(&deck[i]);
-        free(deck);
-        lecture_free(&lec);
-        return 0;
+        fin(nb_cards, deck, &lec, scores, can_play);
+        return 1;
     }
 
-
-    /* 6) Tirage initial: depart = deck[0], objectif = deck[1] */
     int deck_i = 0;
 
     Jeu depart, objectif;
+    int objectif_valide = 0;
+
     if (!jeu_from_card(&depart, &lec, &deck[deck_i++])) {
         printf("Erreur init depart.\n");
-        fin( nb_cards, deck, &lec, scores,can_play);
-		return;
+        fin(nb_cards, deck, &lec, scores, can_play);
+        return 1;
     }
+
     if (!jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
         printf("Erreur init objectif.\n");
         jeu_free(&depart);
-        fin( nb_cards, deck, &lec, scores,can_play);
-        return;
+        fin(nb_cards, deck, &lec, scores, can_play);
+        return 1;
     }
+    objectif_valide = 1;
 
-    /* afficher situation initiale : */
     affichage(&depart, &objectif, &lec);
 
-    
-    /* 7) Boucle de jeu: tant qu’il reste des cartes objectif */
     char line[2048];
-    while (1) {
+    int game_over = 0;
 
-        /* nouveau tour: tout le monde peut jouer */
+    while (!game_over) {
+
         for (int i = 0; i < n_joueurs; i++)
             can_play[i] = 1;
 
-        /* si plus de carte objectif => fin */
-        if (deck_i > nb_cards)
-            break; /* sécurité */
-
-        if (deck_i == nb_cards) {
-            /* plus de nouvelle carte objectif disponible => partie terminée :*/
+        /* plus de carte objectif ? */
+        if (deck_i >= nb_cards) {
             break;
         }
 
-        /* tour courant: lire des propositions jusqu’à ce que quelqu’un gagne */
         while (fgets(line, (int)sizeof(line), stdin) != NULL) {
-            /* ignorer lignes vides / "." (dans l’annexe on voit un "." tapé) :*/
-            if (line[0] == '\\n' || (line[0] == '.' && (line[1] == '\\n' || line[1] == '\\0'))) {
+
+            if (line[0] == '\n' || (line[0] == '.' && (line[1] == '\n' || line[1] == '\0')))
                 continue;
-            }
 
             char id[128], seq[1024];
             int nread = sscanf(line, " %127s %1023s", id, seq);
             if (nread < 2) {
-                /* entrée pas au format "ID SEQ" -> message libre 1 ligne */
-                printf("Entree invalide.\n\n");
+                printf("Entree invalide.\n");
                 continue;
             }
 
             int pj = index_joueur(n_joueurs, joueurs, id);
             if (pj < 0) {
-                printf("Joueur inconnu.\n\n");
+                printf("Joueur inconnu.\n");
                 continue;
             }
 
             if (!can_play[pj]) {
-                printf("%s ne peut pas jouer\n\n", id);
+                printf("%s ne peut pas jouer\n", id);
                 continue;
             }
 
-            /* tester la séquence: on clone depart, on applique, puis on compare à objectif */
-            int ok_obj = sequence_reussit(&depart, &objectif,
-                &lec, line);
-
+            /* ✅ utilise la fonction déjà faite dans jeu.c */
+            int ok_obj = sequence_reussit(&depart, &objectif, &lec, seq);
 
             if (ok_obj) {
                 scores[pj] += 1;
-                printf("%s gagne un point\n\n", id);
+                printf("%s gagne un point\n", id);
 
-                /* nouveau départ = objectif atteint */
+                /* ✅ MOVE PROPRE : objectif devient depart */
                 jeu_free(&depart);
-                depart = objectif; /* copie de struct (les vecteurs restent valides) */
+                depart = objectif;
+                objectif_valide = 0; /* objectif n'est plus "indépendant" jusqu'à recréation */
 
                 /* nouvelle carte objectif */
-                jeu_free(&objectif);
-                if (!jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
-                    /* plus de carte => fin */
-                    void fin_partie(n_joueurs, joueurs, scores, depart, objectif);
-                    return;
+                if (deck_i >= nb_cards || !jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
+                    game_over = 1;
+                    break;
                 }
+                objectif_valide = 1;
 
                 affichage(&depart, &objectif, &lec);
-                break; /* fin de tour */
+                break;
             }
             else {
-                /* mauvaise séquence -> joueur éliminé du tour : */
                 can_play[pj] = 0;
-                printf("Sequence invalide: %s ne peut plus jouer durant ce tour\n\n", id);
+                printf("Sequence invalide: %s ne peut plus jouer durant ce tour\n", id);
 
-                /* si un seul joueur peut encore jouer -> il gagne le point : */
-                int last = -1;
-                int nb_ok = 0;
+                int last = -1, nb_ok = 0;
                 for (int i = 0; i < n_joueurs; i++) {
-                    if (can_play[i]) {
-                        nb_ok++; last = i;
-                    }
+                    if (can_play[i]) { nb_ok++; last = i; }
                 }
+
                 if (nb_ok == 1) {
                     scores[last] += 1;
-                    printf("%s gagne un point car lui seul peut encore jouer durant ce tour\n\n", joueurs[last]);
+                    printf("%s gagne un point car lui seul peut encore jouer durant ce tour\n", joueurs[last]);
 
-                    /* nouveau départ = objectif (même si personne n’a trouvé la séquence) */
+                    /* ✅ MOVE PROPRE */
                     jeu_free(&depart);
                     depart = objectif;
+                    objectif_valide = 0;
 
-                    /* nouvelle carte objectif */
-                    jeu_free(&objectif);
-                    if (!jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
-                        void fin_partie(n_joueurs, joueurs, scores, depart, objectif);
-                        return;
+                    if (deck_i >= nb_cards || !jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
+                        game_over = 1;
+                        break;
                     }
+                    objectif_valide = 1;
 
                     affichage(&depart, &objectif, &lec);
-                    break; /* fin de tour */
+                    break;
                 }
             }
         }
 
-        /* EOF -> fin */
         if (feof(stdin)) break;
     }
 
-
+    /* Fin de partie */
+    fin_partie(n_joueurs, joueurs, scores, &depart, (objectif_valide ? &objectif : NULL));
+    fin(nb_cards, deck, &lec, scores, can_play);
+    return 0;
 }
 
 int joueurs_distincts(int n, const char* noms[]) {
@@ -250,20 +233,18 @@ void print_scores_fin(int n, const char* noms[], const int scores[]) {
 }
 
 void fin_partie(int n_joueurs, const char* joueurs, int* scores, Jeu* depart, Jeu* objectif) {
-    /* 8) Fin: afficher scores triés (strict) : */
     print_scores_fin(n_joueurs, joueurs, scores);
 
-    /* libere le jeux */
-    jeu_free(depart);
-    jeu_free(objectif);
+    if (depart)  jeu_free(depart);
+    if (objectif) jeu_free(objectif);
 }
 
 void fin(int nb_cards, Card* deck, Lecture* lec, int* scores, int* can_play) {
-    /* libere le deck */
-    for (int i = 0; i < nb_cards; i++) card_free(&deck[i]);
-    free(deck);
-
-    lecture_free(lec);
+    if (deck) {
+        for (int i = 0; i < nb_cards; i++) card_free(&deck[i]);
+        free(deck);
+    }
+    if (lec) lecture_free(lec);
     free(scores);
     free(can_play);
 }

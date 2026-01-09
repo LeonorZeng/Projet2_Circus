@@ -47,9 +47,9 @@ Card* build_all_cards(int n_animaux, int* out_nb_cards) {
 
     int count = 0;
     heap_iteratif(n_animaux, perm, cards, &count);
-
     free(perm);
 
+    afficher_permutation(n_animaux, cards);
     *out_nb_cards = count;
     printf("Nombre de cartes generees: %d\n\n", count);
     return cards;
