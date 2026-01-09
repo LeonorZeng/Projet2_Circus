@@ -18,11 +18,12 @@ int podium_push(Podium* p, int animal) {
 }
 
 int podium_pop(Podium* p) {
-    int animal;
-    assert(p->nbElements >= 0);
-    animal = obtenir(p, p->nbElements);
-    supprimer(p, p->nbElements);
-    printf("Podium pop %d\n", animal);
+    assert(p != NULL);
+    assert(p->nbElements > 0);              // il faut au moins 1 élément
+
+    int idx = p->nbElements - 1;            // dernier index valide
+    int animal = obtenir(p, idx);
+    supprimer(p, idx);
     return animal;
 }
 
