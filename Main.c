@@ -3,9 +3,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "lecture.h"
 #include "jeu.h"
-#include "card.h"
 
 
 /* Tri des scores: score décroissant, puis nom croissant */
@@ -20,9 +18,6 @@ int joueurs_distincts(int n, const char* noms[]);
 int index_joueur(int n, const char* noms[], const char* id);
 int cmp_scoreline(const void* a, const void* b);
 void print_scores_fin(int n, const char* noms[], const int scores[]);
-void print_ordres(const Lecture* lec);
-int jeu_from_card(Jeu* j, const Lecture* lec, const Card* c);
-void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec);
 void fin_partie(int n_joueurs, const char* joueurs, int* scores, Jeu* depart, Jeu* objectif);
 void fin(int nb_cards, Card* deck, Lecture* lec, int* scores, int* can_play);
 
@@ -83,6 +78,7 @@ int main(int argc, const char* argv[]) {
         return 0;
     }
 
+
     /* 6) Tirage initial: depart = deck[0], objectif = deck[1] */
     int deck_i = 0;
 
@@ -102,16 +98,17 @@ int main(int argc, const char* argv[]) {
     /* afficher situation initiale : */
     affichage(&depart, &objectif, &lec);
 
+    
     /* 7) Boucle de jeu: tant qu’il reste des cartes objectif */
     char line[2048];
     while (1) {
 
         /* nouveau tour: tout le monde peut jouer */
-        for (int i = 0; i < n_joueurs; i++) 
+        for (int i = 0; i < n_joueurs; i++)
             can_play[i] = 1;
 
         /* si plus de carte objectif => fin */
-        if (deck_i > nb_cards) 
+        if (deck_i > nb_cards)
             break; /* sécurité */
 
         if (deck_i == nb_cards) {
@@ -122,7 +119,7 @@ int main(int argc, const char* argv[]) {
         /* tour courant: lire des propositions jusqu’à ce que quelqu’un gagne */
         while (fgets(line, (int)sizeof(line), stdin) != NULL) {
             /* ignorer lignes vides / "." (dans l’annexe on voit un "." tapé) :*/
-            if (line[0] == '\n' || (line[0] == '.' && (line[1] == '\n' || line[1] == '\0'))) {
+            if (line[0] == '\\n' || (line[0] == '.' && (line[1] == '\\n' || line[1] == '\\0'))) {
                 continue;
             }
 
@@ -130,36 +127,29 @@ int main(int argc, const char* argv[]) {
             int nread = sscanf(line, " %127s %1023s", id, seq);
             if (nread < 2) {
                 /* entrée pas au format "ID SEQ" -> message libre 1 ligne */
-                printf("Entree invalide.\n");
+                printf("Entree invalide.\\n");
                 continue;
             }
 
             int pj = index_joueur(n_joueurs, joueurs, id);
             if (pj < 0) {
-                printf("Joueur inconnu.\n");
+                printf("Joueur inconnu.\\n");
                 continue;
             }
 
             if (!can_play[pj]) {
-                printf("%s ne peut pas jouer\n", id);
+                printf("%s ne peut pas jouer\\n", id);
                 continue;
             }
 
             /* tester la séquence: on clone depart, on applique, puis on compare à objectif */
-            Jeu tmp;
-            if (!jeu_clone(&tmp, &depart)) {
-                printf("Erreur memoire.\n");
-                continue;
-            }
+            int ok_obj = sequence_reussit(&depart, &objectif,
+                &lec, line);
 
-            int ok_seq = jeu_appliquer_sequence(&tmp, &lec, seq);
-            int ok_obj = ok_seq && jeu_equals(&tmp, &objectif);
-
-            jeu_free(&tmp);
 
             if (ok_obj) {
                 scores[pj] += 1;
-                printf("%s gagne un point\n", id);
+                printf("%s gagne un point\\n", id);
 
                 /* nouveau départ = objectif atteint */
                 jeu_free(&depart);
@@ -179,19 +169,19 @@ int main(int argc, const char* argv[]) {
             else {
                 /* mauvaise séquence -> joueur éliminé du tour : */
                 can_play[pj] = 0;
-                printf("Sequence invalide: %s ne peut plus jouer durant ce tour\n", id);
+                printf("Sequence invalide: %s ne peut plus jouer durant ce tour\\n", id);
 
                 /* si un seul joueur peut encore jouer -> il gagne le point : */
                 int last = -1;
                 int nb_ok = 0;
                 for (int i = 0; i < n_joueurs; i++) {
-                    if (can_play[i]) { 
-                        nb_ok++; last = i; 
+                    if (can_play[i]) {
+                        nb_ok++; last = i;
                     }
                 }
                 if (nb_ok == 1) {
                     scores[last] += 1;
-                    printf("%s gagne un point car lui seul peut encore jouer durant ce tour\n", joueurs[last]);
+                    printf("%s gagne un point car lui seul peut encore jouer durant ce tour\\n", joueurs[last]);
 
                     /* nouveau départ = objectif (même si personne n’a trouvé la séquence) */
                     jeu_free(&depart);
@@ -201,7 +191,7 @@ int main(int argc, const char* argv[]) {
                     jeu_free(&objectif);
                     if (!jeu_from_card(&objectif, &lec, &deck[deck_i++])) {
                         void fin_partie(n_joueurs, joueurs, scores, depart, objectif);
-						return;
+                        return;
                     }
 
                     affichage(&depart, &objectif, &lec);
@@ -212,26 +202,9 @@ int main(int argc, const char* argv[]) {
 
         /* EOF -> fin */
         if (feof(stdin)) break;
-    } 
-}
+    }
 
-void fin_partie(int n_joueurs, const char* joueurs, int* scores, Jeu* depart, Jeu* objectif) {
-    /* 8) Fin: afficher scores triés (strict) : */
-    print_scores_fin(n_joueurs, joueurs, scores);
 
-    /* libere le jeux */
-    jeu_free(depart);
-    jeu_free(objectif);
-}
-
-void fin(int nb_cards, Card *deck, Lecture * lec, int * scores, int * can_play) {
-    /* libere le deck */
-    for (int i = 0; i < nb_cards; i++) card_free(&deck[i]);
-    free(deck);
-
-    lecture_free(lec);
-    free(scores);
-    free(can_play);
 }
 
 int joueurs_distincts(int n, const char* noms[]) {
@@ -276,172 +249,21 @@ void print_scores_fin(int n, const char* noms[], const int scores[]) {
     free(t);
 }
 
-   /* Doit afficher la ligne en se limitant aux ordres autorisés :*/
-void print_ordres(const Lecture* lec) {
-    int first = 1;
+void fin_partie(int n_joueurs, const char* joueurs, int* scores, Jeu* depart, Jeu* objectif) {
+    /* 8) Fin: afficher scores triés (strict) : */
+    print_scores_fin(n_joueurs, joueurs, scores);
 
-    /* ordre d'affichage demandé dans le sujet */
-    if (lec->allow_KI) {
-        if (!first) printf(" | ");
-        printf("KI (B -> R)");
-        first = 0;
-    }
-    if (lec->allow_LO) {
-        if (!first) printf(" | ");
-        printf("LO (B <- R)");
-        first = 0;
-    }
-    if (lec->allow_SO) {
-        if (!first) printf(" | ");
-        printf("SO (B <-> R)");
-        first = 0;
-    }
-    if (lec->allow_NI) {
-        if (!first) printf(" | ");
-        printf("NI (B ^)");
-        first = 0;
-    }
-    if (lec->allow_MA) {
-        if (!first) printf(" | ");
-        printf("MA (R ^)");
-        first = 0;
-    }
-
-    printf("\n\n");
+    /* libere le jeux */
+    jeu_free(depart);
+    jeu_free(objectif);
 }
 
-/* Convertit une Card vers un Jeu (podiums remplis bas->haut) */
-int jeu_from_card(Jeu* j, const Lecture* lec, const Card* c) {
-    /* initPodium(cap = n_animaux) */
-    if (!initPodium(&j->bleu, lec->n_animaux)) return 0;
-    if (!initPodium(&j->rouge, lec->n_animaux)) {
-        podium_free(&j->bleu);
-        return 0;
-    }
+void fin(int nb_cards, Card* deck, Lecture* lec, int* scores, int* can_play) {
+    /* libere le deck */
+    for (int i = 0; i < nb_cards; i++) card_free(&deck[i]);
+    free(deck);
 
-    for (int i = 0; i < c->nb_bleu; i++) {
-        if (!podium_push(&j->bleu, c->bleu[i])) return 0;
-    }
-    for (int i = 0; i < c->nb_rouge; i++) {
-        if (!podium_push(&j->rouge, c->rouge[i])) return 0;
-    }
-    return 1;
-}
-
-/* =========================
-   Affichage "situation" (strict)
-   - gauche = départ
-   - droite = objectif
-   - la ligne des dashes contient " ==> "
-   ========================= */
-
-int max_name_len(const Lecture* lec) {
-    int m = 0;
-    for (int i = 0; i < lec->n_animaux; i++) {
-        m = (m > (int)strlen(lec->animaux[i])) ? m : (int)strlen(lec->animaux[i]);
-    }
-    return m;
-}
-
-void print_spaces(int n) {
-    for (int i = 0; i < n; i++) 
-        putchar(' ');
-}
-
-void print_left(const char* s, int width) {
-    int len = (int)strlen(s);
-    int right = width - len;
-    fputs(s, stdout);
-    print_spaces(right);
-}
-
-void largeur(int* wb, int* wr, const Jeu* jeu, const Lecture* lec) {
-    *wb = 4;
-    *wr = 5;
-    for (int i = 0; i < jeu->bleu.nbElements; ++i)
-        *wb = (*wb > strlen(name_from_id(lec, jeu->bleu.elements[i]))) ? *wb : strlen(name_from_id(lec, jeu->bleu.elements[i]));
-
-    for (int i = 0; i < jeu->rouge.nbElements; ++i)
-        *wr = (*wr > strlen(name_from_id(lec, jeu->rouge.elements[i]))) ? *wr : strlen(name_from_id(lec, jeu->rouge.elements[i]));
-
-}
-
-/* Affiche 2 jeux côte à côte selon le format de l’énoncé : */
-void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
-    if (!depart || !objectif || !lec) 
-        return;
-
-	int wbD, wrD, wbO, wrO; ///< ce sont les largueurs des podiums pour depart (D) et objectif (O)
-    largeur(&wbD, &wrD, depart, lec);
-    largeur(&wbO, &wrO, objectif, lec);
-
-    int h1 = depart->bleu.nbElements > depart->rouge.nbElements ? depart->bleu.nbElements : depart->rouge.nbElements;
-
-    int h2 = objectif->bleu.nbElements > objectif->rouge.nbElements ? objectif->bleu.nbElements : objectif->rouge.nbElements;
-
-    int h = h1 > h2 ? h1 : h2;
-
-    /* lignes animaux */
-    for (int row = h - 1; row >= 0; row--) {
-
-        /* depart BLEU */
-        if (row < depart->bleu.nbElements)
-            print_left(name_from_id(lec, depart->bleu.elements[row]), wbD);
-        else
-            print_spaces(wbD);
-
-        print_spaces(2);
-
-        /* depart ROUGE */
-        if (row < depart->rouge.nbElements)
-            print_left(name_from_id(lec, depart->rouge.elements[row]), wrD);
-        else
-            print_spaces(wrD);
-
-		// espace entre départ et objectif est fixe à 7 espaces
-        print_spaces(7);
-
-        
-        /* objectif BLEU */
-        if (row < objectif->bleu.nbElements)
-            print_left(name_from_id(lec, objectif->bleu.elements[row]), wbO);
-        else
-            print_spaces(wbO);
-
-        print_spaces(2);
-
-        /* objectif ROUGE */
-        if (row < objectif->rouge.nbElements)
-            print_left(name_from_id(lec, objectif->rouge.elements[row]), wrO);
-        else
-            print_spaces(wrO);
-
-        putchar('\n');
-    }
-
-    
-    /* ligne dashes avec ==> au milieu */
-    print_left("----", wbD);
-    print_spaces(2);
-    print_left("----", wrD);
-
-    printf("  ==>  ");
-
-    print_left("----", wbO);
-    print_spaces(2);
-    print_left("----", wrO);
-    putchar('\n');
-
-    /* labels */
-    print_left("BLEU", wbD);
-    print_spaces(2);
-    print_left("ROUGE", wrD);
-
-    // espace entre départ et objectif est fixe à 7 espaces
-    print_spaces(7);
-
-    print_left("BLEU", wbO);
-    print_spaces(2);
-    print_left("ROUGE", wrO);
-    putchar('\n');
+    lecture_free(lec);
+    free(scores);
+    free(can_play);
 }

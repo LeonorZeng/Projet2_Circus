@@ -13,6 +13,7 @@ void podium_free(Podium* p) {
 }
 
 int podium_push(Podium* p, int animal) {
+	printf("Podium push %d\n", animal);
     return ajouter(p, animal);
 }
 
@@ -21,6 +22,7 @@ int podium_pop(Podium* p) {
     assert(p->nbElements >= 0);
     animal = obtenir(p, p->nbElements);
     supprimer(p, p->nbElements);
+    printf("Podium pop %d\n", animal);
     return animal;
 }
 

@@ -8,17 +8,15 @@ typedef Vecteur Podium;
  * Après son utilisation, la mémoire occupée par un podium doit être libérée
  * en invoquant la fonction @ref podium_free.
  * @param[out] p L'adresse du podium à initialiser.
- * @param[in] capacite La capacité initiale du podium.
+ * @param[in] cap La capacité initiale du podium.
  * @return 0 en cas d'échec (manque de mémoire disponible) et 1 en cas de succès.
- * @pre <code>capacite</code> doit être supérieur ou égal à 1.
- */
+ * @pre <code>cap</code> doit être supérieur ou égal à 1.
+ */	
 int initPodium(Podium* p, int cap);
 
 /**
- * @brief Libère l'espace mémoire occupé par un podium. Après avoir été détruit, il ne doit
- * pas être ré-employé sans avoir été ré-initialisé. Toute autre opération peut donner des
- * résultats incohérent ou même provoquer l'arrêt brutal du programme.
- * @param[in,out] p L'adresse du podium.
+ * @brief Libère toute la mémoire dynamique associée à un podium.
+ * @param[in,out] p L'adresse du podium à libérer.
  */
 void podium_free(Podium* p);
 
@@ -31,14 +29,22 @@ void podium_free(Podium* p);
 int podium_push(Podium* p, int animal);
 
 /**
- * @brief Dépile (pop) le sommet d'un podium.
+ * @brief Dépile (pop) un animal d'un podium. L'animal au sommet du podium est retiré.
  * @param[in,out] p L'adresse du podium.
- * @return la valeur du dernier élément ajouter
+ * @return L'élément dépilé, ou -1 si le podium est vide.
  */
 int podium_pop(Podium* p);
 
-// Affichage debug (bas -> haut) en nombres
+/**
+ * @brief Affiche le contenu d'un podium (du bas vers le haut).
+ * @param[in] p L'adresse du podium à afficher.
+ */
 void podium_print(const Podium* p);
 
-// Rotation bas -> haut (utile pour NI/MA). Renvoie 1 si OK, 0 si <= 1 élément.
+/**
+ * @brief Effectue une rotation du podium du bas vers le haut.
+ * L'élément au bas du podium est déplacé au sommet.
+ * @param[in,out] p L'adresse du podium à faire tourner.
+ * @return 0 si le podium est vide, 1 sinon.
+ */
 int podium_bas_vers_haut(Podium* p);

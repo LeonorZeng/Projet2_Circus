@@ -3,7 +3,7 @@
 #include <string.h>  // strlen, strcat, strcmp
 #include <assert.h>  // assert
 
-#include "Lecture.h"
+#include "lecture.h"
 
 // Quelques réglages Visual (comme dans l'exemple prof)
 #pragma warning (disable : 4996)
@@ -223,4 +223,37 @@ const char* name_from_id(const Lecture* lec, int id) {
     if (id < 0 || id >= lec->n_animaux) 
         return "Cet id n'est pas valide.";
     return lec->animaux[id];
+}
+
+void print_ordres(const Lecture* lec) {
+    int first = 1;
+
+    /* ordre d'affichage demandé dans le sujet */
+    if (lec->allow_KI) {
+        if (!first) printf(" | ");
+        printf("KI (B -> R)");
+        first = 0;
+    }
+    if (lec->allow_LO) {
+        if (!first) printf(" | ");
+        printf("LO (B <- R)");
+        first = 0;
+    }
+    if (lec->allow_SO) {
+        if (!first) printf(" | ");
+        printf("SO (B <-> R)");
+        first = 0;
+    }
+    if (lec->allow_NI) {
+        if (!first) printf(" | ");
+        printf("NI (B ^)");
+        first = 0;
+    }
+    if (lec->allow_MA) {
+        if (!first) printf(" | ");
+        printf("MA (R ^)");
+        first = 0;
+    }
+
+    printf("\n\n");
 }

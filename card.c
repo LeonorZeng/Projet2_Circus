@@ -4,15 +4,6 @@
 #include <time.h>
 
 #include "card.h"
-#include "lecture.h"
-
-
-/* =========================
-   G¨¦n¨¦ration des "cartes position"
-   (toutes les positions possibles)
-   ========================= */
-
-   /* Une carte = contenu bleu + contenu rouge (bas->haut), avec des ids d'animaux [0..n-1] */
 
 void initCard(Card* c) {
     if (!c) return;
@@ -32,59 +23,10 @@ void card_free(Card* c) {
     c->nb_rouge = 0;
 }
 
-/**
- * @brief Calcule la factorielle d'un entier n >= 0.
- * @param[in] n Le nombre dont on veut calculer la factorielle.
- * @return le factorielle de n.
- */
 int fact(int n) {
     for (int i = n - 1; i >= 1 ; --i)
         n *= i;
     return n;
-}
-
-/**
- * @brief Cr¨¦e toutes les permutations d'animaux et g¨¦n¨¨re les cartes
- correspondantes avec l'algorithme de Heaps.
- * @param[in] n L'adresse du podium.
- * @param[in] animal L'¨¦l¨¦ment devant ¨ºtre ajout¨¦.
- * @return 0 si pile pleine. et 1 en cas de succ¨¨s.
- */
-void gen_cards_rec(int n, int depth, int* perm, int* used, Card* out, int* out_count) {
-    if (depth == n) {
-        for (int k = 0; k <= n; k++) {
-            Card* c = &out[*out_count];
-
-            c->nb_bleu = k;
-            c->nb_rouge = n - k;
-
-            c->bleu = (k > 0) ? (int*)malloc((size_t)k * sizeof(int)) : NULL;
-            c->rouge = (n - k > 0) ? (int*)malloc((size_t)(n - k) * sizeof(int)) : NULL;
-
-            if ((k > 0 && !c->bleu) || (n - k > 0 && !c->rouge)) {
-                /* si manque m¨¦moire: on met une carte vide (et on continue) */
-                free(c->bleu); free(c->rouge);
-            }
-
-            else {
-                for (int i = 0; i < k; i++)
-                    c->bleu[i] = perm[i];
-                for (int i = 0; i < n - k; i++)
-                    c->rouge[i] = perm[k + i];
-            }
-
-            (*out_count)++;
-        }
-        return;
-    }
-
-    for (int x = 0; x < n; x++) {
-        if (!used[x]) {
-            used[x] = 1;
-            perm[depth] = x;
-            used[x] = 0;
-        }
-    }
 }
 
 Card* build_all_cards(int n_animaux, int* out_nb_cards) {
@@ -113,7 +55,6 @@ Card* build_all_cards(int n_animaux, int* out_nb_cards) {
     return cards;
 }
 
-/* M¨¦lange Fisher-Yates */
 void shuffle_cards(Card* cards, int n) {
     for (int i = n - 1; i > 0; i--) {
         int j = rand() % (i + 1);
@@ -123,16 +64,16 @@ void shuffle_cards(Card* cards, int n) {
     }
 }
 
-void afficher_permutation(int n, Card* A) {
+void afficher_permutation(int n, Card* animaux) {
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < A[i].nb_bleu; j++) {
-            printf("%d ", A[i].bleu[j]);
+        for (int j = 0; j < animaux[i].nb_bleu; j++) {
+            printf("%d ", animaux[i].bleu[j]);
         }
 
         printf("| ");
 
-        for (int r = 0; r < A[i].nb_rouge; r++){
-            printf("%d ", A[i].rouge[r]);
+        for (int r = 0; r < animaux[i].nb_rouge; r++){
+            printf("%d ", animaux[i].rouge[r]);
         }
         printf("\n");
     }
@@ -167,25 +108,25 @@ void enregistrement(int n, const int* perm, Card* out, int* out_count) {
     }
 }
 
-void heap_iteratif(int n, int* A, Card* out, int* out_count) {
+void heap_iteratif(int n, int* animaux, Card* out, int* out_count) {
     int* compteur = (int*)calloc(n, sizeof(int));
     if (!compteur) {
         printf("Erreur memoire. Nous ne pouvons pas generer les cartes.\n");
         return;
 	}
 
-    enregistrement(n, A, out, out_count);
+    enregistrement(n, animaux, out, out_count);
 
     int i = 0;
 
     while (i < n) {
         if (compteur[i] < i) {
 			int swap = (i % 2 == 0) ? 0 : compteur[i];
-            int tmp = A[swap];
-            A[swap] = A[i];
-            A[i] = tmp;
+            int tmp = animaux[swap];
+            animaux[swap] = animaux[i];
+            animaux[i] = tmp;
 
-            enregistrement(n, A, out, out_count);
+            enregistrement(n, animaux, out, out_count);
 
             ++compteur[i]; // on incr¨¦mente l'indice de boucle apr¨¨s avoir effectu¨¦ une it¨¦ration
             i = 0;// on retourne au cas de base de la version r¨¦cursive

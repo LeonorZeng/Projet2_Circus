@@ -21,6 +21,9 @@ void lecture_free(Lecture* lec);
 
 const char* name_from_id(const Lecture* lec, int id);
 
+/* Doit afficher la ligne en se limitant aux ordres autorisés :*/
+void print_ordres(const Lecture* lec);
+
 // Fonctions internes (utilisées uniquement dans Lecture.c)
 static char* read_line_concat(FILE* f);
 static void free_words(char** words, int n);
