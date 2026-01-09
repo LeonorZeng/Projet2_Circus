@@ -9,11 +9,8 @@
 #pragma warning (disable : 4996)
 #pragma warning (disable : 6308 28183)
 
-/* ------------------------------------------------------------
-   Lire UNE ligne complète en concaténant des blocs fgets.
-   Renvoie une chaîne allouée (à free) ou NULL si EOF.
-   ------------------------------------------------------------ */
-static char* read_line_concat(FILE* f) {
+
+char* read_line_concat(FILE* f) {
     enum { BUFFER_SIZE = 10 };
     char buffer[BUFFER_SIZE];
 
@@ -57,13 +54,13 @@ static char* read_line_concat(FILE* f) {
     return NULL;
 }
 
-static void free_words(char** words, int n) {
+void free_words(char** words, int n) {
     if (!words) return;
     for (int i = 0; i < n; i++) free(words[i]);
     free(words);
 }
 
-static char* dup_word(const char* start, int len) {
+char* dup_word(const char* start, int len) {
     char* w = (char*)malloc((size_t)len + 1);
     if (!w) return NULL;
     for (int i = 0; i < len; i++) w[i] = start[i];
@@ -71,7 +68,7 @@ static char* dup_word(const char* start, int len) {
     return w;
 }
 
-static int split_words(const char* line, char*** out_words, int* out_n) {
+int split_words(const char* line, char*** out_words, int* out_n) {
     *out_words = NULL;
     *out_n = 0;
 
@@ -109,7 +106,7 @@ static int split_words(const char* line, char*** out_words, int* out_n) {
     return 1;
 }
 
-static void reset_orders(Lecture* lec) {
+void reset_orders(Lecture* lec) {
     lec->allow_KI = 0;
     lec->allow_LO = 0;
     lec->allow_SO = 0;
@@ -117,7 +114,7 @@ static void reset_orders(Lecture* lec) {
     lec->allow_MA = 0;
 }
 
-static int apply_order_token(Lecture* lec, const char* tok) {
+int apply_order_token(Lecture* lec, const char* tok) {
     if (strcmp(tok, "KI") == 0) lec->allow_KI = 1;
     else if (strcmp(tok, "LO") == 0) lec->allow_LO = 1;
     else if (strcmp(tok, "SO") == 0) lec->allow_SO = 1;

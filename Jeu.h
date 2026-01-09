@@ -61,18 +61,6 @@ int ordre_NI(Jeu* j, const Lecture* lec);
  */
 int ordre_MA(Jeu* j, const Lecture* lec);
 
-// Applique une séquence collée : "KILOSONIMA"
-
-/** @brief Applique une séquence d'ordres sur un jeu.
- * @param[in,out] j L'adresse du jeu à modifier.
- * @param[in] lec La configuration de lecture (pour vérifier si les ordres sont autorisés).
- * @param[in] seq La séquence d'ordres collée (ex: "KILOSONIMA").
- * @return 1 si la séquence a été appliquée avec succès, 0 sinon (ordre invalide ou non autorisé).
- */
-int jeu_appliquer_sequence(Jeu* j, const Lecture* lec, const char* seq);
-
-// Affichage
-
 /** @brief Affiche 2 jeux côte à côte selon le format de l’énoncé.
  * @param[in] depart L'adresse du jeu de départ.
  * @param[in] objectif L'adresse du jeu objectif.
@@ -106,5 +94,11 @@ int jeu_equals(const Jeu* a, const Jeu* b);
 int sequence_reussit(const Jeu* depart, const Jeu* objectif,
     const Lecture* lec, const char* seq);
 
-void test_jeu(const Jeu* depart, const Jeu* objectif,
-    const Lecture* lec, const char* seq);
+
+/** @brief Applique une séquence d'ordres sur un jeu.
+ * @param[in,out] j L'adresse du jeu à modifier.
+ * @param[in] lec La configuration de lecture (pour vérifier si les ordres sont autorisés).
+ * @param[in] seq La séquence d'ordres collée (ex: "KILOSONIMA").
+ * @return 1 si la séquence a été appliquée avec succès, 0 sinon (ordre invalide ou non autorisé).
+ */
+int jeu_appliquer_sequence(Jeu* j, const Lecture* lec, const char* seq);

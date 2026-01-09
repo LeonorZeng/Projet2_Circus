@@ -35,7 +35,8 @@ void podium_print(const Podium* p) {
 }
 
 int podium_bas_vers_haut(Podium* p) {
-    if (p->nbElements <= 1) return 0;
+    if (p->nbElements <= 1) 
+        return 0;
 
     int bas = p->elements[0];
 
@@ -46,3 +47,29 @@ int podium_bas_vers_haut(Podium* p) {
     p->elements[p->nbElements - 1] = bas;
     return 1;
 }
+
+int podium_clone(Podium* dst, const Podium* src) {
+    // On reste cohérent avec l'API Podium
+    if (!initPodium(dst, src->capacite))
+        return 0;
+
+    for (int i = 0; i < src->nbElements; i++) {
+        ItemV it = obtenir(src, i);
+        if (!ajouter(dst, it)) {
+            podium_free(dst);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int podium_equals(const Podium* a, const Podium* b) {
+    if (a->nbElements != b->nbElements)
+        return 0;
+
+    for (int i = 0; i < a->nbElements; i++) {
+        if (obtenir(a, i) != obtenir(b, i)) return 0;
+    }
+    return 1;
+}
+

@@ -127,18 +127,18 @@ int main(int argc, const char* argv[]) {
             int nread = sscanf(line, " %127s %1023s", id, seq);
             if (nread < 2) {
                 /* entrée pas au format "ID SEQ" -> message libre 1 ligne */
-                printf("Entree invalide.\\n");
+                printf("Entree invalide.\n\n");
                 continue;
             }
 
             int pj = index_joueur(n_joueurs, joueurs, id);
             if (pj < 0) {
-                printf("Joueur inconnu.\\n");
+                printf("Joueur inconnu.\n\n");
                 continue;
             }
 
             if (!can_play[pj]) {
-                printf("%s ne peut pas jouer\\n", id);
+                printf("%s ne peut pas jouer\n\n", id);
                 continue;
             }
 
@@ -149,7 +149,7 @@ int main(int argc, const char* argv[]) {
 
             if (ok_obj) {
                 scores[pj] += 1;
-                printf("%s gagne un point\\n", id);
+                printf("%s gagne un point\n\n", id);
 
                 /* nouveau départ = objectif atteint */
                 jeu_free(&depart);
@@ -169,7 +169,7 @@ int main(int argc, const char* argv[]) {
             else {
                 /* mauvaise séquence -> joueur éliminé du tour : */
                 can_play[pj] = 0;
-                printf("Sequence invalide: %s ne peut plus jouer durant ce tour\\n", id);
+                printf("Sequence invalide: %s ne peut plus jouer durant ce tour\n\n", id);
 
                 /* si un seul joueur peut encore jouer -> il gagne le point : */
                 int last = -1;
@@ -181,7 +181,7 @@ int main(int argc, const char* argv[]) {
                 }
                 if (nb_ok == 1) {
                     scores[last] += 1;
-                    printf("%s gagne un point car lui seul peut encore jouer durant ce tour\\n", joueurs[last]);
+                    printf("%s gagne un point car lui seul peut encore jouer durant ce tour\n\n", joueurs[last]);
 
                     /* nouveau départ = objectif (même si personne n’a trouvé la séquence) */
                     jeu_free(&depart);

@@ -48,3 +48,21 @@ void podium_print(const Podium* p);
  * @return 0 si le podium est vide, 1 sinon.
  */
 int podium_bas_vers_haut(Podium* p);
+
+/**
+ * @brief Clone le contenu d'un podium source vers un podium destination.
+ * @param[out] dst L'adresse du podium destination.
+ * @param[in] src L'adresse du podium source.
+ * @return 0 en cas d'échec (manque de mémoire disponible) et 1 en cas de succès.
+ */
+int podium_clone(Podium* dst, const Podium* src);
+
+/**
+ * @brief Compare deux podiums pour vérifier s'ils sont égaux.
+ * Deux podiums sont considérés égaux s'ils ont le même nombre d'éléments
+ * et que chaque élément à la même position est identique.
+ * @param[in] a L'adresse du premier podium.
+ * @param[in] b L'adresse du second podium.
+ * @return 1 si les podiums sont égaux, 0 sinon.
+ */
+int podium_equals(const Podium* a, const Podium* b);

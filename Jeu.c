@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 
+
+enum{ ESP_PODIUM = 2};
 /* ===================== INIT / FREE ===================== */
 
 int jeu_init(Jeu* j, const Lecture* lec) {
@@ -98,35 +100,6 @@ int ordre_MA(Jeu* j, const Lecture* lec) {
     return podium_bas_vers_haut(&j->rouge);
 }
 
-/* ===================== SEQUENCE ===================== */
-
-int jeu_appliquer_sequence(Jeu* j, const Lecture* lec, const char* seq) {
-    if (seq == NULL) return 0;
-
-    size_t len = strlen(seq);
-    if (len % 2 != 0) return 0;
-
-    for (size_t i = 0; i < len; i += 2) {
-        char ordre[3] = { seq[i], seq[i + 1], '\0' };
-
-        int ok = 0;
-        if (strcmp(ordre, "KI") == 0) 
-            ok = ordre_KI(j, lec);
-        else if (strcmp(ordre, "LO") == 0) 
-            ok = ordre_LO(j, lec);
-        else if (strcmp(ordre, "SO") == 0) 
-            ok = ordre_SO(j, lec);
-        else if (strcmp(ordre, "NI") == 0) 
-            ok = ordre_NI(j, lec);
-        else if (strcmp(ordre, "MA") == 0) 
-            ok = ordre_MA(j, lec);
-        else return 0; // ordre inconnu
-
-        if (!ok) return 0;
-    }
-    return 1;
-}
-
 /* ===================== AFFICHAGE ===================== */
 int max_name_len(const Lecture* lec) {
     int m = 0;
@@ -201,7 +174,7 @@ void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
         else
             print_spaces(wbO);
 
-        print_spaces(2);
+        print_spaces(ESP_PODIUM);
 
         /* objectif ROUGE */
         if (row < objectif->rouge.nbElements)
@@ -214,58 +187,32 @@ void affichage(const Jeu* depart, const Jeu* objectif, const Lecture* lec) {
 
 
     /* ligne dashes avec ==> au milieu */
-    print_left("----", wbD);
-    print_spaces(2);
+    print_left("----", wbD+ESP_PODIUM);
     print_left("----", wrD);
 
     printf("  ==>  ");
 
-    print_left("----", wbO);
-    print_spaces(2);
+    print_left("----", wbO+ESP_PODIUM);
     print_left("----", wrO);
     putchar('\n');
 
     /* labels */
-    print_left("BLEU", wbD);
-    print_spaces(2);
+    print_left("BLEU", wbD + ESP_PODIUM);
     print_left("ROUGE", wrD);
 
     // espace entre départ et objectif est fixe à 7 espaces
     print_spaces(7);
 
-    print_left("BLEU", wbO);
-    print_spaces(2);
+    print_left("BLEU", wbO + ESP_PODIUM);
     print_left("ROUGE", wrO);
-    putchar('\n');
+    putchar('\n\n');
 }
 
-/* ===================== CLONE / EQUALS (static + publics) ===================== */
-
-static int podium_clone(Podium* dst, const Podium* src) {
-    // On reste cohérent avec l'API Podium
-    if (!initPodium(dst, src->capacite)) return 0;
-
-    for (int i = 0; i < src->nbElements; i++) {
-        ItemV it = obtenir(src, i);
-        if (!ajouter(dst, it)) {
-            podium_free(dst);
-            return 0;
-        }
-    }
-    return 1;
-}
-
-static int podium_equals(const Podium* a, const Podium* b) {
-    if (a->nbElements != b->nbElements) return 0;
-
-    for (int i = 0; i < a->nbElements; i++) {
-        if (obtenir(a, i) != obtenir(b, i)) return 0;
-    }
-    return 1;
-}
+/* ===================== CLONE / EQUALS (publics) ===================== */
 
 int jeu_clone(Jeu* dst, const Jeu* src) {
-    if (!podium_clone(&dst->bleu, &src->bleu)) return 0;
+    if (!podium_clone(&dst->bleu, &src->bleu)) 
+        return 0;
 
     if (!podium_clone(&dst->rouge, &src->rouge)) {
         podium_free(&dst->bleu);
@@ -275,8 +222,7 @@ int jeu_clone(Jeu* dst, const Jeu* src) {
 }
 
 int jeu_equals(const Jeu* a, const Jeu* b) {
-    return podium_equals(&a->bleu, &b->bleu) &&
-        podium_equals(&a->rouge, &b->rouge);
+    return podium_equals(&a->bleu, &b->bleu) && podium_equals(&a->rouge, &b->rouge);
 }
 
 int sequence_reussit(const Jeu* depart, const Jeu* objectif,
@@ -293,16 +239,39 @@ int sequence_reussit(const Jeu* depart, const Jeu* objectif,
     return ok;
 }
 
-void test_jeu(const Jeu* depart, const Jeu* objectif,
-    const Lecture* lec, const char* seq) {
-        printf("Avant:\n");
-    affichage(depart, objectif, lec);
-    if (sequence_reussit(depart,objectif,
-        lec, seq)){
-        printf("Apres:\n");
-        affichage(depart, objectif, lec);
+/* ===================== SEQUENCE ===================== */
+
+int jeu_appliquer_sequence(Jeu* j, const Lecture* lec, const char* seq) {
+    if (seq == NULL) return 0;
+
+    size_t len = strlen(seq);
+    if (len % 2 != 0) 
+        return 0;
+
+    for (size_t i = 0; i < len; i += 2) {
+        char ordre[3] = { seq[i], seq[i + 1], '\0' };
+
+        int ok = 0;
+        if (strcmp(ordre, "KI") == 0)
+            ok = ordre_KI(j, lec);
+
+        else if (strcmp(ordre, "LO") == 0)
+            ok = ordre_LO(j, lec);
+
+        else if (strcmp(ordre, "SO") == 0)
+            ok = ordre_SO(j, lec);
+
+        else if (strcmp(ordre, "NI") == 0)
+            ok = ordre_NI(j, lec);
+
+        else if (strcmp(ordre, "MA") == 0)
+            ok = ordre_MA(j, lec);
+
+        else 
+            return 0; // ordre inconnu
+
+        if (!ok) 
+            return 0;
     }
-    else{
-        printf("Echec de l'application de la sequence %s\n", seq);
-	}
+    return 1;
 }
